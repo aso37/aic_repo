@@ -1,2 +1,26 @@
+# ===== 原始数据（体积大、有许可约束，不入库）=====
+# 注意：带斜杠的规则锚定在 .gitignore 所在目录，所以要加 **/ 才能匹配子目录
+**/data/raw/
 *.zip
-.idea
+
+# ===== 密钥：严禁提交 =====
+.env
+
+# ===== 虚拟环境 =====
+.venv/
+venv/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ===== 临时输出 =====
+*.log

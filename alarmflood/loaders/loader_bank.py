@@ -1,4 +1,9 @@
 # loaders/loader_bank.py
+# 【模板，当前未使用】为 D6"真实脱敏告警"接入预留的骨架：
+# AIOps2021 数据集没有现成告警文件（只有 metric/logs/trace），
+# 因此主数据走 loader_aiops2021.py（从 metric 生成告警）。
+# D6 拿到运维同学的真实告警 CSV 时，把本文件的 RAW 指向真实文件、
+# 改好列名即可直接使用——这就是"新数据源 = 一个新 loader"的活例子。
 import pandas as pd
 from pathlib import Path
 

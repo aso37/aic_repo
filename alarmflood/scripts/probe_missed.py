@@ -1,5 +1,17 @@
 # -*- coding: utf-8 -*-
-"""通用探针：对每个故障类型，取漏报窗口，对比根因实体全指标 窗口均值 vs 基线均值"""
+"""⚠️ 已废弃（2026-10-14）—— 请勿运行，改用下面两个脚本
+
+本脚本存在**时区 bug**：第 21–24 行用了 `int(w.st.timestamp())`。
+`w.st` 是 naive datetime，`.timestamp()` 会按本机时区（UTC+8）转换，
+导致查询窗口偏离真实故障窗 **8 小时**，结论不可信。
+
+保留本文件仅用于记录排查过程。替代品：
+
+    probe_missed2.py    —— 修正版（全程用 st_ms/ed_ms），每类型取 missed[0] 做示例
+    probe_missed_all.py —— 全样本统计版，能支撑"该类型无可用信号"这类全覆盖结论
+
+原说明：通用探针：对每个故障类型，取漏报窗口，对比根因实体全指标 窗口均值 vs 基线均值
+"""
 import pandas as pd
 
 win = pd.read_parquet("results/fault_windows.parquet")

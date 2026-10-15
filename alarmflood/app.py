@@ -91,8 +91,11 @@ alarms, floods = load_data()
 # 顶部时间轴：按小时告警量（一眼看到"洪水"在哪）
 per_hour = alarms.groupby(alarms.timestamp // 3_600_000).size()
 per_hour.index = pd.to_datetime(per_hour.index * 3_600_000, unit="ms").strftime("%m-%d %H:%M")
-st.bar_chart(per_hour, height=140,
-             x_label="时间（小时）", y_label="告警条数（抑制后）")
+try:
+    st.bar_chart(per_hour, height=140,
+                 x_label="时间（小时）", y_label="告警条数（抑制后）")
+except TypeError:  # 兼容 streamlit < 1.36（bar_chart 无 x_label/y_label）
+    st.bar_chart(per_hour, height=140)
 
 # 侧边栏：选窗口（按告警量倒序，重的排前面）
 floods_sorted = floods.sort_values("n_alarms", ascending=False).reset_index(drop=True)
@@ -131,8 +134,11 @@ with tab1:
     tier_cnt = wdf.groupby(["tier", "entity"]).size().reset_index(name="n")
     tier_cnt["tier_zh"] = tier_cnt.tier.map(TIER_ZH)
     novel_entities = wdf[wdf.tier == "novel"].entity.unique().tolist()
-    st.dataframe(tier_cnt.sort_values(["tier", "n"], ascending=[True, False]),
-                 width="stretch", height=220)
+    tier_view = tier_cnt.sort_values(["tier", "n"], ascending=[True, False])
+    try:
+        st.dataframe(tier_view, width="stretch", height=220)
+    except TypeError:  # 兼容旧版 streamlit（width 需 int → 改用 use_container_width）
+        st.dataframe(tier_view, height=220, use_container_width=True)
     if novel_entities:
         st.success(f"🎯 新发告警实体（判别性最强）：{', '.join(novel_entities)}")
     else:

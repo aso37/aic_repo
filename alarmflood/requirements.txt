@@ -1,0 +1,8 @@
+# AlarmFlood Copilot 依赖（conda aic 环境实测版本，Python 3.10.22）
+# 安装：G:\anaconda3\envs\aic\python.exe -m pip install -r requirements.txt
+pandas==2.3.3
+numpy==2.2.6
+pyarrow==25.0.1
+drain3==0.9.11
+streamlit==1.65.0
+matplotlib==3.10.9

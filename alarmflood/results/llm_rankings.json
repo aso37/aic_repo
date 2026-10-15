@@ -1,0 +1,2989 @@
+{
+  "generated_at": "2026-10-15T19:48:53",
+  "model": "glm-4-plus",
+  "mode": "llm",
+  "note": "根因排序由 LLM 基于 results/alarms_tagged.parquet 的窗口切片推理得出；root_entity_truth 为数据集标注，仅供核对，不属于模型输出。",
+  "n_windows": 72,
+  "windows": [
+    {
+      "fault_id": 1479,
+      "anomaly_type": "MEMORY",
+      "window": {
+        "st_ms": 1614830160000,
+        "ed_ms": 1614830220000,
+        "st_time": "2021-03-04 03:56:00",
+        "ed_time": "2021-03-04 03:57:00"
+      },
+      "root_entity_truth": "apache01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，内存相关，可能是交易流量突增导致",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，与apache01内存问题一致，进一步确认内存问题",
+          "confidence": 0.3
+        },
+        {
+          "rank": 3,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，可能是系统整体内存压力，但非直接根因",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1483,
+      "anomaly_type": "MEMORY",
+      "window": {
+        "st_ms": 1614834420000,
+        "ed_ms": 1614835860000,
+        "st_time": "2021-03-04 05:07:00",
+        "ed_time": "2021-03-04 05:31:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "MG01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且内存问题可能引发连锁反应",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间早，且与MG01内存问题相关",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警但首现时间早，可能受MG01影响",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 1489,
+      "anomaly_type": "MEMORY",
+      "window": {
+        "st_ms": 1614840180000,
+        "ed_ms": 1614841740000,
+        "st_time": "2021-03-04 06:43:00",
+        "ed_time": "2021-03-04 07:09:00"
+      },
+      "root_entity_truth": "Mysql02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "磁盘繁忙可能引发内存问题，且是唯一非内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能影响其他数据库",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存问题可能影响交易处理",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "中间件内存问题可能影响服务调用",
+          "confidence": 0.1
+        },
+        {
+          "rank": 5,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "网关内存问题可能影响请求路由",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1495,
+      "anomaly_type": "MEMORY",
+      "window": {
+        "st_ms": 1614852000000,
+        "ed_ms": 1614854520000,
+        "st_time": "2021-03-04 10:00:00",
+        "ed_time": "2021-03-04 10:42:00"
+      },
+      "root_entity_truth": "Redis02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警实体，且内存问题可能影响下游服务",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期出现内存告警，可能受Redis影响",
+          "confidence": 0.5
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻内存告警，但可能与Redis问题相关",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1581,
+      "anomaly_type": "MEMORY",
+      "window": {
+        "st_ms": 1614982080000,
+        "ed_ms": 1614983400000,
+        "st_time": "2021-03-05 22:08:00",
+        "ed_time": "2021-03-05 22:30:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，且为半常驻告警，可能引发后续内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间早，常驻告警但可能受apache01影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间较早，数据库内存告警可能与应用服务器相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "中间件内存告警，可能受上游应用服务器影响",
+          "confidence": 0.1
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat集群节点告警，可能受整体环境影响",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1501,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1614860160000,
+        "ed_ms": 1614862860000,
+        "st_time": "2021-03-04 12:16:00",
+        "ed_time": "2021-03-04 13:01:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，CPU异常升高可能引发下游服务内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，可能受Redis影响导致内存压力",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警但首现时间较早，可能为连锁反应",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 1569,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1614962340000,
+        "ed_ms": 1614964200000,
+        "st_time": "2021-03-05 16:39:00",
+        "ed_time": "2021-03-05 17:10:00"
+      },
+      "root_entity_truth": "Tomcat04",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，且影响数据库核心服务",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第二个出现内存告警，影响Web服务器",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第三个出现内存告警，可能受上游影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与MG02同时出现，可能集群问题",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存告警，受上游影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1597,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615012680000,
+        "ed_ms": 1615014060000,
+        "st_time": "2021-03-06 06:38:00",
+        "ed_time": "2021-03-06 07:01:00"
+      },
+      "root_entity_truth": "Tomcat03",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且与内存告警相关联，可能是磁盘IO问题导致内存异常",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警的实体，且后续出现内存使用率告警",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警的实体之一，可能受Mysql01问题影响",
+          "confidence": 0.4
+        },
+        {
+          "rank": 4,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期出现内存告警，可能与数据库问题相关",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期出现内存告警，可能受上游问题影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1614,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615043640000,
+        "ed_ms": 1615044360000,
+        "st_time": "2021-03-06 15:14:00",
+        "ed_time": "2021-03-06 15:26:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警中最早出现，且涉及内存问题可能影响整个系统",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中最早出现，网络设备内存问题可能影响整体",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存问题，常驻但多次出现且影响核心系统",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "中间件内存问题，常驻但早于其他Tomcat告警",
+          "confidence": 0.1
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存问题，常驻但出现时间较早",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1615,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615044240000,
+        "ed_ms": 1615045620000,
+        "st_time": "2021-03-06 15:24:00",
+        "ed_time": "2021-03-06 15:47:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警中最早出现，且apache01同时有内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中最早出现，可能是内存泄漏源头",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能与网络设备内存问题有关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存告警，可能影响交易处理",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "中间件内存告警，可能影响服务稳定性",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1617,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615048080000,
+        "ed_ms": 1615048680000,
+        "st_time": "2021-03-06 16:28:00",
+        "ed_time": "2021-03-06 16:38:00"
+      },
+      "root_entity_truth": "MG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，最早出现，影响内存使用",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，与apache01内存告警同时出现",
+          "confidence": 0.3
+        },
+        {
+          "rank": 3,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，最早出现，可能影响后续系统",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，与MG01类似，可能为同一问题",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，较早出现，可能受上游影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1631,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615072980000,
+        "ed_ms": 1615074300000,
+        "st_time": "2021-03-06 23:23:00",
+        "ed_time": "2021-03-06 23:45:00"
+      },
+      "root_entity_truth": "Tomcat02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，且为半常驻，可能引发后续连锁内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻内存告警但首现时间早，可能是apache01问题的扩散",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻内存告警，首现时间较早，可能是受影响的服务",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻内存告警，首现时间较早，可能是受影响的服务",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻内存告警，首现时间较晚，可能是受影响的数据库",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1651,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615104360000,
+        "ed_ms": 1615105020000,
+        "st_time": "2021-03-07 08:06:00",
+        "ed_time": "2021-03-07 08:17:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，且为半常驻级别，可能引发连锁内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第二个出现内存告警，可能受apache01影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第三个出现内存告警，可能受上游影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第四个出现内存告警，可能受上游影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第五个出现内存告警，可能受上游影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1667,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615123920000,
+        "ed_ms": 1615124640000,
+        "st_time": "2021-03-07 13:32:00",
+        "ed_time": "2021-03-07 13:44:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现且为半常驻告警，可能引发后续内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与Mysql01同时出现，半常驻告警，可能为共同根因",
+          "confidence": 0.3
+        },
+        {
+          "rank": 3,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "在Mysql01后1分钟出现，可能受其影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与Mysql01同时出现，可能为并发问题",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "在Mysql01后4分钟出现，可能为连锁反应",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1865,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615517220000,
+        "ed_ms": 1615518360000,
+        "st_time": "2021-03-12 02:47:00",
+        "ed_time": "2021-03-12 03:06:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一非内存告警，且为半常驻，可能引发内存问题",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现的内存告警，可能影响后续服务",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与IG01同时出现，可能是同一问题源头",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用层内存告警，可能受底层问题影响",
+          "confidence": 0.1
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存告警，可能与应用交互问题相关",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1869,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615530900000,
+        "ed_ms": 1615531320000,
+        "st_time": "2021-03-12 06:35:00",
+        "ed_time": "2021-03-12 06:42:00"
+      },
+      "root_entity_truth": "IG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且为磁盘繁忙问题，可能是数据库性能瓶颈",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间早，磁盘繁忙问题可能影响数据库性能",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，可能是系统资源问题源头",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间早，可能是中间件资源问题",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间较早，可能是中间件资源问题",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1872,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1615534200000,
+        "ed_ms": 1615534200000,
+        "st_time": "2021-03-12 07:30:00",
+        "ed_time": "2021-03-12 07:30:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，磁盘繁忙可能影响数据库性能，位于交易系统上游",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 2427,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616447880000,
+        "ed_ms": 1616449140000,
+        "st_time": "2021-03-22 21:18:00",
+        "ed_time": "2021-03-22 21:39:00"
+      },
+      "root_entity_truth": "Tomcat02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql02",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警且最早出现，可能引发后续内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警但首现时间早，可能受Mysql02影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间第二早",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间较晚",
+          "confidence": 0.1
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间较晚",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 2446,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616479860000,
+        "ed_ms": 1616481420000,
+        "st_time": "2021-03-23 06:11:00",
+        "ed_time": "2021-03-23 06:37:00"
+      },
+      "root_entity_truth": "Tomcat04",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，且有无缓存内存告警支持",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第二早出现内存告警，可能受Mysql02影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "apache02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第三早出现内存告警，可能为连锁反应",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "内存问题可能影响数据库性能",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存告警，可能受上游影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 2447,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616482140000,
+        "ed_ms": 1616482800000,
+        "st_time": "2021-03-23 06:49:00",
+        "ed_time": "2021-03-23 07:00:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一半常驻告警，虽非新发但信号强度高于常驻告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现的常驻告警，可能为内存问题源头",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存告警，且后续出现无缓存内存告警",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存告警，与数据库可能形成关联",
+          "confidence": 0.15
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存告警，与Tomcat03类似",
+          "confidence": 0.15
+        }
+      ]
+    },
+    {
+      "fault_id": 2450,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616489040000,
+        "ed_ms": 1616490240000,
+        "st_time": "2021-03-23 08:44:00",
+        "ed_time": "2021-03-23 09:04:00"
+      },
+      "root_entity_truth": "Tomcat04",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警中最早出现，可能引发后续连锁内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中最早出现，可能为初始问题源头",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能与数据库性能问题相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能与网关性能问题相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能与应用服务器性能问题相关",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 2452,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616492160000,
+        "ed_ms": 1616493420000,
+        "st_time": "2021-03-23 09:36:00",
+        "ed_time": "2021-03-23 09:57:00"
+      },
+      "root_entity_truth": "MG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能引发连锁反应",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与apache02同时出现，可能相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与apache02同时出现，可能相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期出现的内存告警",
+          "confidence": 0.1
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存问题，可能受应用层影响",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 2453,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616493420000,
+        "ed_ms": 1616494200000,
+        "st_time": "2021-03-23 09:57:00",
+        "ed_time": "2021-03-23 10:10:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能引发连锁内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql02",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与MG02同时出现，可能受其影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "apache02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与MG02同时出现，可能受其影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与MG02同时出现，可能受其影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "后续出现内存告警，可能受上游影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 2461,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616504580000,
+        "ed_ms": 1616505360000,
+        "st_time": "2021-03-23 13:03:00",
+        "ed_time": "2021-03-23 13:16:00"
+      },
+      "root_entity_truth": "Tomcat04",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能影响后续所有服务",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与IG02同时出现，同属基础设施层",
+          "confidence": 0.3
+        },
+        {
+          "rank": 3,
+          "entity": "apache02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，但出现时间较早",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "基础设施层告警，时间次早",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库层告警，可能受基础设施影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1455,
+      "anomaly_type": "JVM; CPU",
+      "window": {
+        "st_ms": 1614792720000,
+        "ed_ms": 1614792720000,
+        "st_time": "2021-03-03 17:32:00",
+        "ed_time": "2021-03-03 17:32:00"
+      },
+      "root_entity_truth": "MG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "MG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，直接指向MG02资源异常，可能是交易处理瓶颈",
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "fault_id": 1485,
+      "anomaly_type": "JVM; CPU",
+      "window": {
+        "st_ms": 1614836220000,
+        "ed_ms": 1614838020000,
+        "st_time": "2021-03-04 05:37:00",
+        "ed_time": "2021-03-04 06:07:00"
+      },
+      "root_entity_truth": "MG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "MG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，位于因果链上游，内存告警后出现CPU异常",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警实体，首现时间早，内存问题可能是CPU异常的根因",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，首现时间早，可能是MG02内存压力的源头",
+          "confidence": 0.4
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间较晚，可能是系统整体压力的表现",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间早，但缺乏新发信号，可能性较低",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1502,
+      "anomaly_type": "JVM; CPU",
+      "window": {
+        "st_ms": 1614862620000,
+        "ed_ms": 1614864780000,
+        "st_time": "2021-03-04 12:57:00",
+        "ed_time": "2021-03-04 13:33:00"
+      },
+      "root_entity_truth": "IG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，且位于因果链上游，导致后续内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间早，且与IG01相关联，可能是受影响的服务",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间较早，可能是受IG01影响的中间件",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存告警，可能是交易量增加导致",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "同类型网关告警，可能是受IG01影响",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1460,
+      "anomaly_type": "JVM;MEMORY",
+      "window": {
+        "st_ms": 1614798960000,
+        "ed_ms": 1614798960000,
+        "st_time": "2021-03-03 19:16:00",
+        "ed_time": "2021-03-03 19:16:00"
+      },
+      "root_entity_truth": "Tomcat02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，直接指向CPU资源异常，可能是应用代码问题或配置不当",
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "fault_id": 1466,
+      "anomaly_type": "JVM;MEMORY",
+      "window": {
+        "st_ms": 1614808320000,
+        "ed_ms": 1614808320000,
+        "st_time": "2021-03-03 21:52:00",
+        "ed_time": "2021-03-03 21:52:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，直接指向CPU资源异常，可能是应用代码问题或请求量突增",
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "fault_id": 1472,
+      "anomaly_type": "JVM;MEMORY",
+      "window": {
+        "st_ms": 1614815580000,
+        "ed_ms": 1614815580000,
+        "st_time": "2021-03-03 23:53:00",
+        "ed_time": "2021-03-03 23:53:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，直接指向Tomcat01进程CPU使用异常，可能是应用代码问题或资源争用",
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "fault_id": 1498,
+      "anomaly_type": "JVM;MEMORY",
+      "window": {
+        "st_ms": 1614856380000,
+        "ed_ms": 1614858480000,
+        "st_time": "2021-03-04 11:13:00",
+        "ed_time": "2021-03-04 11:48:00"
+      },
+      "root_entity_truth": "MG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "磁盘sda繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且出现时间晚于内存告警，可能是内存问题导致的磁盘IO瓶颈",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现的半常驻告警，且为apache01独有，可能是根因",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与内存使用率告警同时出现，进一步确认内存问题",
+          "confidence": 0.6
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "与apache01磁盘告警时间相近，可能受apache01影响",
+          "confidence": 0.5
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警但首现时间较早，可能与apache01内存问题相关",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 1504,
+      "anomaly_type": "JVM;MEMORY",
+      "window": {
+        "st_ms": 1614865740000,
+        "ed_ms": 1614868200000,
+        "st_time": "2021-03-04 13:49:00",
+        "ed_time": "2021-03-04 14:30:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警中最早出现，且与MySQL内存告警时间关联",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中最早出现，与apache01告警时间接近",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能受apache01影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能受apache01影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警中较晚出现，但与MySQL内存告警时间关联",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1505,
+      "anomaly_type": "JVM;MEMORY",
+      "window": {
+        "st_ms": 1614867000000,
+        "ed_ms": 1614868800000,
+        "st_time": "2021-03-04 14:10:00",
+        "ed_time": "2021-03-04 14:40:00"
+      },
+      "root_entity_truth": "IG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警且首现时间最早，可能是内存泄漏或负载突增",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警但首现时间第二早，可能受apache01影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间第三，可能为连锁反应",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，但后续出现无缓存内存告警",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间较晚",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1605,
+      "anomaly_type": "JVM;MEMORY",
+      "window": {
+        "st_ms": 1615026120000,
+        "ed_ms": 1615027620000,
+        "st_time": "2021-03-06 10:22:00",
+        "ed_time": "2021-03-06 10:47:00"
+      },
+      "root_entity_truth": "Tomcat02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警中最早出现，且涉及内存问题可能影响其他服务",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中最早出现，数据库内存问题可能引发连锁反应",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，应用服务器内存问题可能影响交易",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，网关设备问题可能影响整体流量",
+          "confidence": 0.1
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中出现，且有无缓存内存告警补充",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1499,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1614858300000,
+        "ed_ms": 1614859140000,
+        "st_time": "2021-03-04 11:45:00",
+        "ed_time": "2021-03-04 11:59:00"
+      },
+      "root_entity_truth": "Tomcat03",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql02",
+          "alarm": "磁盘sda繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且与内存告警相关联，可能因磁盘IO问题导致内存压力",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能影响后续系统组件",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期内存告警，可能为系统级问题源头",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存告警，可能受上游影响或自身问题",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "网络设备内存告警，可能受整体系统压力影响",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1507,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1614871320000,
+        "ed_ms": 1614873120000,
+        "st_time": "2021-03-04 15:22:00",
+        "ed_time": "2021-03-04 15:52:00"
+      },
+      "root_entity_truth": "Tomcat02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "磁盘sda繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且Mysql01内存使用率持续升高，表明数据库性能问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现的告警，且为Mysql01独有，表明数据库内存问题",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "次早出现的告警，可能受数据库问题影响",
+          "confidence": 0.4
+        },
+        {
+          "rank": 4,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期出现的告警，可能受上游问题影响",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期出现的告警，可能受上游问题影响",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1577,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1614977160000,
+        "ed_ms": 1614978480000,
+        "st_time": "2021-03-05 20:46:00",
+        "ed_time": "2021-03-05 21:08:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警中最早出现，可能引发后续内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中最早出现，可能与数据库性能问题相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能与中间件问题相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能与中间件集群问题相关",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警中较早出现，可能与应用服务器问题相关",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1583,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1614984600000,
+        "ed_ms": 1614985260000,
+        "st_time": "2021-03-05 22:50:00",
+        "ed_time": "2021-03-05 23:01:00"
+      },
+      "root_entity_truth": "apache02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache02",
+          "alarm": "磁盘sdb繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且时间最早，可能是磁盘I/O瓶颈导致系统性能下降",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间第二早，内存问题可能由apache02磁盘问题引发",
+          "confidence": 0.5
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存使用率上升，可能是应用层问题导致的连锁反应",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 1599,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1615014540000,
+        "ed_ms": 1615015920000,
+        "st_time": "2021-03-06 07:09:00",
+        "ed_time": "2021-03-06 07:32:00"
+      },
+      "root_entity_truth": "IG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能引发连锁反应",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期内存告警，影响Web服务",
+          "confidence": 0.3
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存告警，影响交易处理",
+          "confidence": 0.3
+        },
+        {
+          "rank": 4,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "消息网关内存告警，影响消息传递",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存告警，影响交易处理",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1623,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1615058040000,
+        "ed_ms": 1615059300000,
+        "st_time": "2021-03-06 19:14:00",
+        "ed_time": "2021-03-06 19:35:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，且为半常驻信号，可能引发后续连锁内存告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "第二个出现内存告警的实体，可能受apache01影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与MG02同时出现，可能是受影响的服务",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与MG02同时出现，可能是受影响的服务",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "后续出现内存告警，可能是连锁反应",
+          "confidence": 0.1
+        }
+      ]
+    },
+    {
+      "fault_id": 1650,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1615102500000,
+        "ed_ms": 1615103760000,
+        "st_time": "2021-03-07 07:35:00",
+        "ed_time": "2021-03-07 07:56:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现且为常驻告警，可能影响后续多个服务",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与Mysql01同时出现，可能受数据库影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 3,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "在Mysql01后不久出现，可能受影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "在数据库告警后出现，可能受影响",
+          "confidence": 0.2
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "在Mysql01后出现，可能存在关联",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1731,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1615224000000,
+        "ed_ms": 1615224060000,
+        "st_time": "2021-03-08 17:20:00",
+        "ed_time": "2021-03-08 17:21:00"
+      },
+      "root_entity_truth": "apache01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警且首现时间最早，可能是交易量突增或代码效率问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "磁盘sdb繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警但时间稍晚，可能是Tomcat02流量增加导致的IO压力",
+          "confidence": 0.6
+        }
+      ]
+    },
+    {
+      "fault_id": 1814,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1615356840000,
+        "ed_ms": 1615358340000,
+        "st_time": "2021-03-10 06:14:00",
+        "ed_time": "2021-03-10 06:39:00"
+      },
+      "root_entity_truth": "Tomcat02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "Tomcat02有新发告警，且CPU异常升高可能是内存问题的结果",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat02内存告警早于CPU告警，可能是根本原因",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "磁盘繁忙可能影响数据库性能，进而影响Tomcat",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat01内存告警出现时间较早，可能受Tomcat02影响",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat03内存告警出现时间较早，可能受Tomcat02影响",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1818,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1615362060000,
+        "ed_ms": 1615362660000,
+        "st_time": "2021-03-10 07:41:00",
+        "ed_time": "2021-03-10 07:51:00"
+      },
+      "root_entity_truth": "apache02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警且时间最早，磁盘繁忙可能引发后续内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache02",
+          "alarm": "磁盘sdb繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警，磁盘繁忙可能影响服务响应",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，磁盘繁忙可能影响数据库性能",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，可能是磁盘繁忙导致的内存问题",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，可能是数据库问题导致的连锁反应",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1873,
+      "anomaly_type": "DISK",
+      "window": {
+        "st_ms": 1615536300000,
+        "ed_ms": 1615537560000,
+        "st_time": "2021-03-12 08:05:00",
+        "ed_time": "2021-03-12 08:26:00"
+      },
+      "root_entity_truth": "IG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "磁盘sda繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且磁盘繁忙可能引发内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间早，且与磁盘告警同实体",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，磁盘繁忙可能影响其他服务",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间第二早，可能受数据库影响",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间第三早，可能受上游影响",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1470,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1614812520000,
+        "ed_ms": 1614812640000,
+        "st_time": "2021-03-03 23:02:00",
+        "ed_time": "2021-03-03 23:04:00"
+      },
+      "root_entity_truth": "Redis02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警且首现最早，CPU异常升高可能是根因",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Redis02",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警，与CPU时间升高相关，可能是根因表现",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，可能是Redis故障导致的连锁反应",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1475,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1614818880000,
+        "ed_ms": 1614818940000,
+        "st_time": "2021-03-04 00:48:00",
+        "ed_time": "2021-03-04 00:49:00"
+      },
+      "root_entity_truth": "MG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "MG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警且首现时间最早，CPU异常升高是系统性能问题的直接指标",
+          "confidence": 0.9
+        }
+      ]
+    },
+    {
+      "fault_id": 1500,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1614859500000,
+        "ed_ms": 1614861240000,
+        "st_time": "2021-03-04 12:05:00",
+        "ed_time": "2021-03-04 12:34:00"
+      },
+      "root_entity_truth": "Redis02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，CPU异常升高可能引发下游服务内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能是Redis问题导致的连锁反应",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存告警，可能是应用层问题导致的压力传导",
+          "confidence": 0.5
+        }
+      ]
+    },
+    {
+      "fault_id": 1571,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1614966480000,
+        "ed_ms": 1614967920000,
+        "st_time": "2021-03-05 17:48:00",
+        "ed_time": "2021-03-05 18:12:00"
+      },
+      "root_entity_truth": "Mysql01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一有新发告警的实体，且内存告警最早出现，CPU异常升高是数据库性能问题的典型表现",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，且与后续CPU异常升高存在因果关系，内存不足导致CPU性能下降",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与内存使用率告警同时出现，进一步证实内存问题是根因",
+          "confidence": 0.6
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间与Mysql01相同，可能是受数据库问题影响的连锁反应",
+          "confidence": 0.5
+        },
+        {
+          "rank": 5,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间较早，可能是受数据库问题影响的中间层表现",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 1573,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1614972780000,
+        "ed_ms": 1614973500000,
+        "st_time": "2021-03-05 19:33:00",
+        "ed_time": "2021-03-05 19:45:00"
+      },
+      "root_entity_truth": "IG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "IG01有新发告警，且CPU异常升高可能是导致后续内存问题的根因",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "IG01",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "IG01有新发告警，CPU高负载可能影响整个系统性能",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "apache01有半常驻告警且首现时间早，可能是受IG01影响",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Mysql01有常驻告警但首现时间早，可能是受上游影响",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "MG02有常驻告警但首现时间相对较早",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1610,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615034340000,
+        "ed_ms": 1615035060000,
+        "st_time": "2021-03-06 12:39:00",
+        "ed_time": "2021-03-06 12:51:00"
+      },
+      "root_entity_truth": "Tomcat04",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat04",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警实体，且CPU异常升高可能引发内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat04",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "同一实体出现CPU告警，进一步确认性能问题",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "该实体内存告警早于CPU告警，可能是问题源头",
+          "confidence": 0.6
+        },
+        {
+          "rank": 4,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期出现且为半常驻，可能受Tomcat04影响",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警但出现较早，可能受上游影响",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1620,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615053060000,
+        "ed_ms": 1615053720000,
+        "st_time": "2021-03-06 17:51:00",
+        "ed_time": "2021-03-06 18:02:00"
+      },
+      "root_entity_truth": "Redis02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "Redis02有新发告警，且CPU异常升高可能是内存问题的根因",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Redis02",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Redis02第二个新发告警，确认CPU问题持续存在",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "apache01内存告警早于其他应用，可能受Redis影响",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "MG01内存告警最早出现，但为常驻告警可信度较低",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat01内存告警出现较早，但为常驻告警可信度低",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1629,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615069860000,
+        "ed_ms": 1615070580000,
+        "st_time": "2021-03-06 22:31:00",
+        "ed_time": "2021-03-06 22:43:00"
+      },
+      "root_entity_truth": "IG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，CPU异常升高可能引发内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能受IG02影响",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻内存告警，时间早于其他常驻告警",
+          "confidence": 0.4
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻内存告警，时间较早",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻内存告警，时间较早",
+          "confidence": 0.2
+        }
+      ]
+    },
+    {
+      "fault_id": 1632,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615075440000,
+        "ed_ms": 1615076820000,
+        "st_time": "2021-03-07 00:04:00",
+        "ed_time": "2021-03-07 00:27:00"
+      },
+      "root_entity_truth": "Tomcat03",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat03",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat03有新发告警，且CPU使用率异常升高表明处理能力瓶颈",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat03内存告警紧随CPU告警出现，可能是内存泄漏导致",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat04内存告警与Tomcat03同时出现，可能是集群级问题",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "apache01内存告警较早出现，可能是上游服务问题",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "MG02内存告警较早出现，可能是中间件资源不足",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1640,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615085880000,
+        "ed_ms": 1615087740000,
+        "st_time": "2021-03-07 02:58:00",
+        "ed_time": "2021-03-07 03:29:00"
+      },
+      "root_entity_truth": "IG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警实体，且CPU异常升高可能是内存问题的结果",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "IG02",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警，与用户态CPU异常升高同时出现，确认CPU问题",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现的内存告警，可能影响后续服务",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期内存告警，可能影响前端服务",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat04",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "早期内存告警，应用层问题可能扩散",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1644,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615094400000,
+        "ed_ms": 1615095120000,
+        "st_time": "2021-03-07 05:20:00",
+        "ed_time": "2021-03-07 05:32:00"
+      },
+      "root_entity_truth": "IG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "IG01有新发告警，且内存使用率异常是系统故障的常见根因",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "IG01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "IG01有新发告警，CPU异常升高表明处理能力受限",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "IG01",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "IG01有新发告警，CPU高负载表明系统处理瓶颈",
+          "confidence": 0.6
+        },
+        {
+          "rank": 4,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "apache01内存告警首现时间早，且为半常驻信号",
+          "confidence": 0.5
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat03内存告警首现时间早，但为常驻信号",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1656,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615109880000,
+        "ed_ms": 1615111380000,
+        "st_time": "2021-03-07 09:38:00",
+        "ed_time": "2021-03-07 10:03:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Mysql01",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警，且是唯一磁盘繁忙告警，可能引发后续内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat01",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警，CPU高负载可能影响服务响应",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警，用户态CPU异常表明应用层问题",
+          "confidence": 0.6
+        },
+        {
+          "rank": 4,
+          "entity": "apache02",
+          "alarm": "磁盘sda繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警，磁盘繁忙可能影响整体性能",
+          "confidence": 0.5
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻但首现时间早，可能受磁盘问题影响",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1750,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615255020000,
+        "ed_ms": 1615255140000,
+        "st_time": "2021-03-09 01:57:00",
+        "ed_time": "2021-03-09 01:59:00"
+      },
+      "root_entity_truth": "Tomcat04",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat04",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警且为独有，CPU异常升高是交易系统性能问题的典型根因",
+          "confidence": 0.9
+        }
+      ]
+    },
+    {
+      "fault_id": 1760,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615272180000,
+        "ed_ms": 1615272240000,
+        "st_time": "2021-03-09 06:43:00",
+        "ed_time": "2021-03-09 06:44:00"
+      },
+      "root_entity_truth": "Redis02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警实体，CPU异常升高可能是根因，导致下游内存压力",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Redis02",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "同一实体CPU告警，与用户态CPU异常升高相互印证",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，可能是Redis故障导致的连锁反应",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "网络设备内存告警，可能是系统整体压力表现",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "消息中间件内存告警，可能是系统整体压力表现",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1769,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615284660000,
+        "ed_ms": 1615284660000,
+        "st_time": "2021-03-09 10:11:00",
+        "ed_time": "2021-03-09 10:11:00"
+      },
+      "root_entity_truth": "IG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，CPU异常升高可能是内存问题的根因",
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "fault_id": 1772,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615290120000,
+        "ed_ms": 1615290240000,
+        "st_time": "2021-03-09 11:42:00",
+        "ed_time": "2021-03-09 11:44:00"
+      },
+      "root_entity_truth": "Tomcat03",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat03",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警实体，CPU异常升高导致内存压力，触发后续内存告警",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，可能是Tomcat03请求激增导致的数据库压力",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "同一实体内存告警，与CPU告警形成因果关系",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Tomcat03",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "同一实体后续CPU告警，确认性能问题持续",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与Tomcat03同时出现，可能是受影响的相关组件",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1780,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615300380000,
+        "ed_ms": 1615300380000,
+        "st_time": "2021-03-09 14:33:00",
+        "ed_time": "2021-03-09 14:33:00"
+      },
+      "root_entity_truth": "IG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG02",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警且与IG02用户态CPU异常升高同时出现，表明该服务器CPU资源耗尽",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "IG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警，表明IG02上应用程序CPU使用异常，可能是业务高峰或代码问题",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，可能是受IG02高CPU影响导致响应缓慢，内存回收不及时",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1784,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615306860000,
+        "ed_ms": 1615306860000,
+        "st_time": "2021-03-09 16:21:00",
+        "ed_time": "2021-03-09 16:21:00"
+      },
+      "root_entity_truth": "IG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警且唯一，表明该实例可能存在异常进程或资源泄漏",
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "fault_id": 1796,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615322400000,
+        "ed_ms": 1615322400000,
+        "st_time": "2021-03-09 20:40:00",
+        "ed_time": "2021-03-09 20:40:00"
+      },
+      "root_entity_truth": "Tomcat01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Tomcat01",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "CPU使用率超标是直接性能问题，与用户态CPU异常升高形成因果链",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Tomcat01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "用户态CPU异常升高表明应用处理逻辑存在问题，可能是CPU密集型操作",
+          "confidence": 0.7
+        }
+      ]
+    },
+    {
+      "fault_id": 1802,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615336440000,
+        "ed_ms": 1615336440000,
+        "st_time": "2021-03-10 00:34:00",
+        "ed_time": "2021-03-10 00:34:00"
+      },
+      "root_entity_truth": "apache01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，CPU异常升高可能是处理请求异常导致",
+          "confidence": 0.8
+        }
+      ]
+    },
+    {
+      "fault_id": 1864,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615515420000,
+        "ed_ms": 1615516680000,
+        "st_time": "2021-03-12 02:17:00",
+        "ed_time": "2021-03-12 02:38:00"
+      },
+      "root_entity_truth": "IG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，且位于微服务网关上游，可能引发下游服务内存问题",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，且后续磁盘繁忙率告警，可能是数据库性能瓶颈",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现磁盘繁忙告警，可能影响数据库整体性能",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "MG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与IG02同时出现内存告警，可能是受上游网关影响",
+          "confidence": 0.4
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "应用服务器内存告警，可能是受上游服务影响",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1871,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615532400000,
+        "ed_ms": 1615533060000,
+        "st_time": "2021-03-12 07:00:00",
+        "ed_time": "2021-03-12 07:11:00"
+      },
+      "root_entity_truth": "MG01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "MG01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "MG01有新发告警，且CPU异常升高可能是内存问题的结果",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "MG01内存告警首现时间早，且与CPU异常升高同属一个实体",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Tomcat01内存告警首现时间最早，可能是问题源头",
+          "confidence": 0.6
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Mysql01内存告警首现时间较早，且为无缓存内存问题",
+          "confidence": 0.5
+        },
+        {
+          "rank": 5,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "Mysql02磁盘繁忙告警首现时间较早，可能是内存问题的结果",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 1875,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615540080000,
+        "ed_ms": 1615540500000,
+        "st_time": "2021-03-12 09:08:00",
+        "ed_time": "2021-03-12 09:15:00"
+      },
+      "root_entity_truth": "Redis02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis02",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一有新发告警的实体，且CPU使用率异常是典型性能问题根因",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间最早，磁盘繁忙可能引发后续内存问题",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "首现时间第二早，可能是Redis问题导致的连锁反应",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 1884,
+      "anomaly_type": "CPU",
+      "window": {
+        "st_ms": 1615553340000,
+        "ed_ms": 1615553400000,
+        "st_time": "2021-03-12 12:49:00",
+        "ed_time": "2021-03-12 12:50:00"
+      },
+      "root_entity_truth": "Redis01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "Redis01",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "新发告警且首现时间最早，CPU异常升高可能是根因",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Redis01",
+          "alarm": "CPU使用率<NUM>%超过阈值<NUM>%",
+          "reason": "新发告警，与CPU时间升高相关，可能是根因表现",
+          "confidence": 0.7
+        },
+        {
+          "rank": 3,
+          "entity": "Tomcat03",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，可能是受Redis影响的结果",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1643,
+      "anomaly_type": "MEMORY",
+      "window": {
+        "st_ms": 1615091160000,
+        "ed_ms": 1615092660000,
+        "st_time": "2021-03-07 04:26:00",
+        "ed_time": "2021-03-07 04:51:00"
+      },
+      "root_entity_truth": "Tomcat04",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "apache01",
+          "alarm": "磁盘sda繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "唯一新发告警，且先出现内存问题后出现磁盘问题，符合故障扩散特征",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "apache01",
+          "alarm": "无缓存内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，首现时间最早，且与后续内存告警相关",
+          "confidence": 0.6
+        },
+        {
+          "rank": 3,
+          "entity": "apache01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，与无缓存内存告警同实体，且时间顺序合理",
+          "confidence": 0.5
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警但首现时间较早，可能与apache01问题相关",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "Tomcat01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "常驻告警，首现时间较早，可能与apache01问题相关",
+          "confidence": 0.3
+        }
+      ]
+    },
+    {
+      "fault_id": 1863,
+      "anomaly_type": "MEMORY",
+      "window": {
+        "st_ms": 1615514820000,
+        "ed_ms": 1615516020000,
+        "st_time": "2021-03-12 02:07:00",
+        "ed_time": "2021-03-12 02:27:00"
+      },
+      "root_entity_truth": "Mysql01",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG02",
+          "alarm": "用户态CPU时间<NUM>%异常升高",
+          "reason": "唯一新发告警，且位于因果链上游，引发后续内存告警",
+          "confidence": 0.8
+        },
+        {
+          "rank": 2,
+          "entity": "Mysql01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能受IG02影响",
+          "confidence": 0.5
+        },
+        {
+          "rank": 3,
+          "entity": "Mysql02",
+          "alarm": "磁盘sdc繁忙率<NUM>%超过阈值<NUM>%",
+          "reason": "半常驻告警，但首现时间早，可能是根因之一",
+          "confidence": 0.4
+        }
+      ]
+    },
+    {
+      "fault_id": 2467,
+      "anomaly_type": "NETWORK",
+      "window": {
+        "st_ms": 1616511720000,
+        "ed_ms": 1616512500000,
+        "st_time": "2021-03-23 15:02:00",
+        "ed_time": "2021-03-23 15:15:00"
+      },
+      "root_entity_truth": "MG02",
+      "candidates": [
+        {
+          "rank": 1,
+          "entity": "IG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "最早出现内存告警，可能引发连锁反应",
+          "confidence": 0.3
+        },
+        {
+          "rank": 2,
+          "entity": "IG02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "与IG01同时出现，同类型告警",
+          "confidence": 0.3
+        },
+        {
+          "rank": 3,
+          "entity": "MG01",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "同时出现，可能受上游影响",
+          "confidence": 0.3
+        },
+        {
+          "rank": 4,
+          "entity": "Mysql02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "数据库内存告警，可能影响交易",
+          "confidence": 0.3
+        },
+        {
+          "rank": 5,
+          "entity": "apache02",
+          "alarm": "内存使用率<NUM>%超过阈值<NUM>%",
+          "reason": "Web服务器内存告警，影响前端服务",
+          "confidence": 0.3
+        }
+      ]
+    }
+  ]
+}

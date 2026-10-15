@@ -1,2 +1,11 @@
 *.zip
 .idea
+
+# Python 本地环境与缓存（不提交；数据/结果文件仍随仓库走，勿加 data/results/*.parquet）
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# LLM 调用缓存（本地可再生；答辩可溯源的推理链已蒸馏进 results/llm_examples.md）
+alarmflood/results/llm_cache/

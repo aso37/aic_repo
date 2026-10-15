@@ -11,10 +11,25 @@ loader_aiops2021.py — AIOps 2021(银行场景)数据 → 统一告警格式
 - data/alarm.parquet        统一格式：timestamp(ms)/alarm_id/content/entity/severity
 - results/fault_windows.parquet 故障窗口：id/service/anomaly_type/st/ed/data_type
 """
+import os
 import pandas as pd
 from pathlib import Path
 
-RAW = Path("E:/aic_data/AIOps2021")
+# 数据根目录解析（三种机器都能跑，互不影响）：
+#   1) 环境变量 AIOPS2021_RAW 显式指定
+#   2) 仓库同级的 aic_data/...（本机解压后的位置）
+#   3) 回退到 E:/aic_data/AIOps2021（队友机器上的既有路径）
+def _resolve_raw() -> Path:
+    if os.environ.get("AIOPS2021_RAW"):
+        return Path(os.environ["AIOPS2021_RAW"])
+    local = (Path(__file__).parents[3] / "aic_data" / "raw" / "aiops2021" /
+             "aiops2021-main" / "AIOps2021")
+    if local.exists():
+        return local
+    return Path("E:/aic_data/AIOps2021")
+
+
+RAW = _resolve_raw()
 OUT_ALARMS = Path(__file__).parents[1] / "data" / "alarm.parquet"
 OUT_WINDOWS = Path(__file__).parents[1] / "results" / "fault_windows.parquet"
 

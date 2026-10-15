@@ -1,0 +1,70 @@
+{
+  "window_id": 192,
+  "window": {
+    "st_time": "2021-03-05 15:17:00",
+    "ed_time": "2021-03-05 15:37:00",
+    "n_all_alarms": 23,
+    "minutes": 21
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多个服务器(apache01、MG01、MG02、Tomcat01-04、Mysql01-02)内存使用率超过阈值，无新发告警，可能存在系统资源压力问题",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache01",
+      "confidence": 0.4,
+      "evidence": "apache01出现5次内存告警，最早触发，包含普通内存和无缓存内存告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.3,
+      "evidence": "Mysql01出现4次内存告警，包含普通内存和无缓存内存告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "MG01",
+      "confidence": 0.3,
+      "evidence": "MG01出现2次内存告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查apache01服务器内存使用情况，分析内存占用高的进程",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01服务器内存配置和查询性能，优化慢查询",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查MG01服务器内存使用情况，分析应用内存泄漏可能",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查Tomcat01-04服务器内存配置和JVM参数",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查Mysql02服务器内存使用情况",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，建议持续监控系统资源使用情况",
+  "ticket": {
+    "title": "[根因处置] apache01 MEMORY 引发告警洪水窗口 #192",
+    "assignee_team": "Web服务组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：apache01 窗口前 2 小时内最早告警 03-05 13:23",
+    "root_cause_link": "results/reports/window_192.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

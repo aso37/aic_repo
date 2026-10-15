@@ -1,0 +1,70 @@
+{
+  "window_id": 195,
+  "window": {
+    "st_time": "2021-03-05 16:14:00",
+    "ed_time": "2021-03-05 16:34:00",
+    "n_all_alarms": 23,
+    "minutes": 21
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多台服务器内存使用率超过阈值，包括apache01、Tomcat01、Mysql02、Tomcat03、Mysql01、MG02、Tomcat04、MG01和Tomcat02。无新发告警，证据不足确定确切根因。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache01",
+      "confidence": 0.4,
+      "evidence": "apache01出现5次内存告警，最早触发，但无新发告警，证据不足确定确切根因",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.3,
+      "evidence": "Mysql01出现4次内存告警，包含无缓存内存告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Tomcat01",
+      "confidence": 0.3,
+      "evidence": "Tomcat01出现2次内存告警，为首批告警之一，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查apache01内存使用情况，分析内存泄漏或配置问题",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01内存使用情况，特别是无缓存内存使用",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查所有Tomcat实例内存配置和JVM参数",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查MG01和MG02内存使用情况",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控系统整体内存使用趋势，排查是否有全局性问题",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，无法确定确切根因，建议持续监控",
+  "ticket": {
+    "title": "[根因处置] apache01 MEMORY 引发告警洪水窗口 #195",
+    "assignee_team": "Web服务组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：apache01 窗口前 2 小时内最早告警 03-05 14:15",
+    "root_cause_link": "results/reports/window_195.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

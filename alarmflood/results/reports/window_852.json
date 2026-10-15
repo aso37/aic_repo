@@ -1,0 +1,70 @@
+{
+  "window_id": 852,
+  "window": {
+    "st_time": "2021-03-25 07:38:00",
+    "ed_time": "2021-03-25 07:49:00",
+    "n_all_alarms": 20,
+    "minutes": 12
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多台服务器内存使用率超过阈值，主要集中在MySQL服务器，其中Mysql02出现新发告警，包括CPU使用率异常升高和用户态CPU时间异常升高，表明该服务器可能存在性能问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.85,
+      "evidence": "Mysql02出现5条告警，包括2条新发告警（CPU使用率异常升高和用户态CPU时间异常升高），且内存使用率告警持续存在，表明该服务器存在严重性能问题。",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.26,
+      "evidence": "Mysql01出现3条告警，包括内存使用率和无缓存内存使用率超过阈值，但无新发告警，可能受Mysql02问题影响。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "apache02",
+      "confidence": 0.24,
+      "evidence": "apache02出现2条告警，内存使用率超过阈值，但无新发告警，可能受整体系统负载影响。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即检查Mysql02服务器进程状态，找出高CPU使用率的进程并采取相应措施",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02数据库慢查询日志，优化可能存在的性能瓶颈SQL",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql02数据库配置参数，适当调整内存相关设置",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查Mysql01和apache02服务器内存使用情况，确认是否受Mysql02问题影响",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控后续告警情况，确认问题是否得到解决",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG02、MG01、Tomcat01-04、MG02等服务器内存使用率告警，可能受整体系统负载影响，暂不处理",
+  "ticket": {
+    "title": "[根因处置] Mysql02 CPU 引发告警洪水窗口 #852",
+    "assignee_team": "数据库组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-25 05:41",
+    "root_cause_link": "results/reports/window_852.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

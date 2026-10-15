@@ -1,0 +1,70 @@
+{
+  "window_id": 388,
+  "window": {
+    "st_time": "2021-03-07 05:20:00",
+    "ed_time": "2021-03-07 05:32:00",
+    "n_all_alarms": 19,
+    "minutes": 13
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多个服务器组件出现内存使用率异常升高，其中IG01节点出现新发告警，包括内存使用率、用户态CPU时间和CPU使用率异常，表明IG01可能是根因源头。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "IG01",
+      "confidence": 0.75,
+      "evidence": "IG01出现新发告警(内存使用率、用户态CPU时间、CPU使用率)，且是首个出现新发告警的实体，表明问题可能从IG01开始扩散",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "apache01",
+      "confidence": 0.47,
+      "evidence": "apache01出现多次内存使用率告警，且是首批出现告警的实体之一，可能受IG01问题影响",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.3,
+      "evidence": "Mysql01出现内存使用率告警，且与apache01几乎同时出现，可能受上游问题影响",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查IG01进程状态，分析CPU使用率异常原因，必要时重启相关服务",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查IG01与apache01、Mysql01之间的连接和调用关系，确认问题传播路径",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache01和Mysql01的内存使用情况，评估是否需要扩容或优化配置",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "监控其他相关节点(MG01、MG02、Tomcat系列)的指标变化",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "记录所有操作步骤和结果，为后续根因分析提供依据",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "Tomcat03、MG01、MG02、Tomcat02、Tomcat01、Mysql02、IG02的内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] IG01 CPU 引发告警洪水窗口 #388",
+    "assignee_team": "接入网关组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：IG01 窗口前 2 小时内最早告警 03-07 03:23",
+    "root_cause_link": "results/reports/window_388.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

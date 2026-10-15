@@ -1,0 +1,65 @@
+{
+  "window_id": 6,
+  "window": {
+    "st_time": "2021-03-04 02:22:00",
+    "ed_time": "2021-03-04 02:28:00",
+    "n_all_alarms": 10,
+    "minutes": 7
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口涉及4个Tomcat服务器CPU异常升高和多个组件内存使用率超阈值，时间集中在02:22-02:28",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Tomcat01",
+      "confidence": 0.7,
+      "evidence": "Tomcat01在02:22:00首先出现CPU异常升高，随后其他Tomcat服务器相继出现类似告警",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "Tomcat02",
+      "confidence": 0.7,
+      "evidence": "Tomcat02在02:24:00出现CPU异常升高，与Tomcat01告警模式一致",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 3,
+      "entity": "Tomcat03",
+      "confidence": 0.7,
+      "evidence": "Tomcat03在02:26:00出现CPU异常升高，与前两个Tomcat服务器告警模式一致",
+      "fault_type": "CPU"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Tomcat01、Tomcat02、Tomcat03、Tomcat04的应用日志，分析CPU异常升高的原因",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查IG01、MG01、MG02的内存使用情况，评估是否需要扩容或优化内存使用",
+      "priority": "中"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql01和Mysql02的内存配置和查询性能，优化慢查询",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "对Tomcat服务器进行负载均衡检查，确保请求均匀分布",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "Mysql01内存使用率和无缓存内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] Tomcat01 CPU 引发告警洪水窗口 #6",
+    "assignee_team": "应用服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Tomcat01 窗口前 2 小时内最早告警 03-04 00:32",
+    "root_cause_link": "results/reports/window_6.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

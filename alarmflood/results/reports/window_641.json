@@ -1,0 +1,70 @@
+{
+  "window_id": 641,
+  "window": {
+    "st_time": "2021-03-23 16:26:00",
+    "ed_time": "2021-03-23 16:36:00",
+    "n_all_alarms": 17,
+    "minutes": 11
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多个服务器节点(IG02, MG01, Mysql02, apache02, IG01, Mysql01, Tomcat03, MG02, Tomcat02, Mysql02, Tomcat04, Tomcat01)内存使用率超过阈值，主要集中在16:26-16:36时间段内，无新发告警。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "Mysql02在窗口内出现3次内存告警，首次出现时间最早，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.4,
+      "evidence": "apache02出现2次内存告警，与Mysql02同时首次出现，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "IG02",
+      "confidence": 0.4,
+      "evidence": "IG02出现2次内存告警，与Mysql02同时首次出现，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02服务器内存使用情况，分析内存占用高的原因",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache02服务器内存使用情况，分析内存占用高的原因",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查IG02服务器内存使用情况，分析内存占用高的原因",
+      "priority": "高"
+    },
+    {
+      "order": 4,
+      "action": "检查其他告警服务器(MG01, Mysql01, Tomcat03, MG02, Tomcat02, Tomcat04, Tomcat01)内存使用情况",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "收集所有服务器的内存使用趋势数据，分析是否存在整体内存资源不足问题",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "由于窗口内无新发告警，所有根因置信度不超过0.4，建议进一步收集数据确认根因",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #641",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-23 14:29",
+    "root_cause_link": "results/reports/window_641.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

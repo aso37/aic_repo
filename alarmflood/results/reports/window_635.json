@@ -1,0 +1,70 @@
+{
+  "window_id": 635,
+  "window": {
+    "st_time": "2021-03-23 15:22:00",
+    "ed_time": "2021-03-23 15:25:00",
+    "n_all_alarms": 10,
+    "minutes": 4
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口显示多个服务器组件内存使用率超过阈值，包括MySQL、Tomcat、Apache、MG和IG组件，但无新发告警，表明可能是系统性内存压力而非突发故障。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "Mysql02在15:23和15:25两次触发内存告警，包括常规内存和无缓存内存，表明MySQL实例存在内存压力",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.3,
+      "evidence": "apache02在15:22触发内存告警，作为半常驻告警，可能是系统内存压力的早期指标",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Tomcat01",
+      "confidence": 0.3,
+      "evidence": "Tomcat01在15:22触发内存告警，与其他Tomcat实例和MySQL组件同时告警，表明可能是系统级内存问题",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查所有受影响服务器的内存使用情况，确定是否有内存泄漏或配置不当",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02的内存配置和查询性能，优化慢查询和内存参数",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Tomcat实例的JVM内存配置和应用程序内存使用情况",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查系统整体内存使用情况，确定是否有其他进程占用过多内存",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "考虑临时增加服务器内存或调整内存告警阈值，避免告警风暴",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，证据不足以确定根因，建议进一步调查系统内存使用模式",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #635",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-23 13:25",
+    "root_cause_link": "results/reports/window_635.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

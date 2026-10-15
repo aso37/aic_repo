@@ -1,0 +1,70 @@
+{
+  "window_id": 785,
+  "window": {
+    "st_time": "2021-03-24 19:23:00",
+    "ed_time": "2021-03-24 19:26:00",
+    "n_all_alarms": 12,
+    "minutes": 4
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口显示多个服务器节点内存使用率超过阈值，主要集中在MySQL和Tomcat服务，无新发告警，证据不足",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "Mysql02出现2次内存告警，包括无缓存内存使用率超标，是规则排序中得分最高的实体",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "Mysql01出现2次内存告警，包括无缓存内存使用率超标，是规则排序中得分第二高的实体",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Tomcat01",
+      "confidence": 0.4,
+      "evidence": "Tomcat01出现内存使用率超标，是多个Tomcat节点中最早出现告警的",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02和Mysql01的内存使用情况，分析查询日志和慢查询，优化内存配置",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查所有Tomcat节点的内存配置和应用程序内存使用情况",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查IG01和IG02的内存使用情况，确认是否与MySQL和Tomcat节点有关联",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查apache02的内存使用情况，确认是否与其他节点告警有关联",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "收集所有节点的系统资源使用历史数据，分析是否存在资源竞争或内存泄漏",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，证据不足，置信度不超过0.4",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #785",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-24 17:23",
+    "root_cause_link": "results/reports/window_785.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

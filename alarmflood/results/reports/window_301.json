@@ -1,0 +1,70 @@
+{
+  "window_id": 301,
+  "window": {
+    "st_time": "2021-03-06 12:39:00",
+    "ed_time": "2021-03-06 12:51:00",
+    "n_all_alarms": 20,
+    "minutes": 13
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多台服务器内存使用率超过阈值，Tomcat04出现新发告警且内存、CPU使用率异常升高，可能存在内存泄漏或应用性能问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Tomcat04",
+      "confidence": 0.8,
+      "evidence": "Tomcat04出现内存使用率告警后，12:45和12:47相继出现用户态CPU和CPU使用率异常升高告警，符合内存泄漏特征。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache01",
+      "confidence": 0.47,
+      "evidence": "apache01在12:39-12:40连续出现内存和无缓存内存使用率告警，可能是内存配置不足或缓存问题。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.3,
+      "evidence": "Mysql01在12:40和12:44出现内存和无缓存内存使用率告警，可能是数据库内存配置或查询问题。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即重启Tomcat04服务，释放内存并观察CPU使用率是否恢复正常",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Tomcat04应用日志，分析内存泄漏原因并联系开发团队",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache01和Mysql01的内存配置，考虑适当增加内存分配",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "监控重启后Tomcat04的内存和CPU使用率趋势",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查其他服务器(IG02、MG01、MG02等)的内存使用情况，防止问题扩散",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG02、MG01、MG02、Tomcat01、Tomcat02、Tomcat03、Mysql02的内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] Tomcat04 MEMORY 引发告警洪水窗口 #301",
+    "assignee_team": "应用服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Tomcat04 窗口前 2 小时内最早告警 03-06 10:39",
+    "root_cause_link": "results/reports/window_301.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

@@ -1,0 +1,70 @@
+{
+  "window_id": 831,
+  "window": {
+    "st_time": "2021-03-25 03:53:00",
+    "ed_time": "2021-03-25 03:55:00",
+    "n_all_alarms": 10,
+    "minutes": 3
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口显示Mysql02服务器出现内存使用率超标、CPU使用率异常升高和无缓存内存使用率超标等多重问题，同时有多台服务器出现内存使用率超标现象，但Mysql02是唯一出现新发告警的实体。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.85,
+      "evidence": "Mysql02出现内存使用率超标、CPU使用率异常升高和无缓存内存使用率超标等多重告警，且是唯一有新发告警的实体",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.17,
+      "evidence": "apache02出现内存使用率超标告警，可能与Mysql02问题相关联",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "IG01",
+      "confidence": 0.15,
+      "evidence": "IG01出现内存使用率超标告警，可能是系统整体资源压力的表现",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即检查Mysql02进程状态，分析慢查询日志，识别高资源消耗的SQL语句",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "临时增加Mysql02服务器内存配置，或优化MySQL参数配置以减少内存使用",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache02与Mysql02的关联性，确认是否存在因apache02问题导致Mysql02负载增加的情况",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查IG01内存使用情况，确认是否为系统整体资源压力导致",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控其他服务器(MG01、IG02、Mysql01、Tomcat03)内存使用趋势，防止问题扩散",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "MG01、IG02、Mysql01和Tomcat03的内存使用率超标告警，在确认Mysql02问题解决前保持监控状态",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #831",
+    "assignee_team": "数据库组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-25 01:57",
+    "root_cause_link": "results/reports/window_831.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

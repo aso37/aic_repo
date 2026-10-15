@@ -1,0 +1,70 @@
+{
+  "window_id": 417,
+  "window": {
+    "st_time": "2021-03-07 10:50:00",
+    "ed_time": "2021-03-07 11:00:00",
+    "n_all_alarms": 13,
+    "minutes": 11
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口显示多个服务器(apache01, Mysql01, IG02, IG01, MG02等)内存使用率超过阈值，无新发告警，可能存在系统资源分配问题或内存泄漏",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache01",
+      "confidence": 0.4,
+      "evidence": "apache01出现3次内存告警，包括总内存和无缓存内存，是窗口内告警次数最多的实体，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "Mysql01出现2次内存告警，包括总内存和无缓存内存，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "IG02",
+      "confidence": 0.4,
+      "evidence": "IG02出现1次内存告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查apache01进程内存使用情况，分析是否有内存泄漏",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01数据库配置和查询性能，优化内存使用",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查所有受影响服务器的系统日志，查找可能的错误或异常",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "考虑临时增加受影响服务器的内存分配",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控后续告警情况，评估是否需要进一步调整告警阈值",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，证据不足，建议持续监控",
+  "ticket": {
+    "title": "[根因处置] apache01 MEMORY 引发告警洪水窗口 #417",
+    "assignee_team": "Web服务组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：apache01 窗口前 2 小时内最早告警 03-07 08:57",
+    "root_cause_link": "results/reports/window_417.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

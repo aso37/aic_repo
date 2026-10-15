@@ -1,0 +1,70 @@
+{
+  "window_id": 750,
+  "window": {
+    "st_time": "2021-03-24 12:40:00",
+    "ed_time": "2021-03-24 12:50:00",
+    "n_all_alarms": 16,
+    "minutes": 11
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多个服务器组件内存使用率超过阈值，包括MG01、Tomcat02、apache02、IG01、MG02、Tomcat01、Mysql02、Mysql01、Tomcat03、IG02和Tomcat04。所有告警均为常驻或半常驻，无新发告警。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache02",
+      "confidence": 0.4,
+      "evidence": "窗口内无新发告警，证据不足。apache02为首个触发告警的组件之一，内存使用率超过阈值。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "窗口内无新发告警，证据不足。Mysql02在多个时间点触发内存使用率告警，包括常规内存和无缓存内存。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "MG01",
+      "confidence": 0.4,
+      "evidence": "窗口内无新发告警，证据不足。MG01为首个触发告警的组件之一，内存使用率超过阈值。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查所有触发内存告警的服务器(MG01、Tomcat02、apache02、IG01、MG02、Tomcat01、Mysql02、Mysql01、Tomcat03、IG02、Tomcat04)的内存使用情况，分析内存泄漏或配置问题",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache02、Mysql02和MG01的进程日志，查找可能的内存泄漏或异常行为",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "临时增加受影响服务器的内存分配，观察告警是否缓解",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查近期是否有系统配置变更或应用部署，可能与内存使用增加相关",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "记录当前内存使用模式，为后续优化和容量规划提供数据支持",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，证据不足，无法确定确切根因",
+  "ticket": {
+    "title": "[根因处置] apache02 MEMORY 引发告警洪水窗口 #750",
+    "assignee_team": "Web服务组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：apache02 窗口前 2 小时内最早告警 03-24 10:40",
+    "root_cause_link": "results/reports/window_750.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

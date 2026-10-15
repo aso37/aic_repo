@@ -1,0 +1,70 @@
+{
+  "window_id": 887,
+  "window": {
+    "st_time": "2021-03-25 14:21:00",
+    "ed_time": "2021-03-25 14:31:00",
+    "n_all_alarms": 15,
+    "minutes": 11
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口分析：14:21-14:29期间共14条告警，涉及MySQL、Tomcat、IG、MG、Apache等多个组件，主要表现为内存使用率告警，部分涉及磁盘繁忙率告警。无新发告警，多为常驻告警。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "无新发告警，证据不足。Mysql02出现4次告警，涉及内存和磁盘繁忙率，但无法确定根本原因。",
+      "fault_type": ""
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "无新发告警，证据不足。Mysql01出现2次内存使用率告警，但无法确定根本原因。",
+      "fault_type": ""
+    },
+    {
+      "rank": 3,
+      "entity": "apache02",
+      "confidence": 0.4,
+      "evidence": "无新发告警，证据不足。apache02出现1次内存使用率告警，但无法确定根本原因。",
+      "fault_type": ""
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02的内存使用情况和磁盘sdc繁忙率，分析是否存在慢查询或索引问题",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01的内存使用情况，分析是否存在内存泄漏或配置不当问题",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache02的内存使用情况，分析是否存在内存泄漏或配置不当问题",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查Tomcat系列服务器的内存使用情况，分析是否存在内存泄漏或配置不当问题",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查IG和MG系列服务器的内存使用情况，分析是否存在内存泄漏或配置不当问题",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "由于无新发告警，无法确定根本原因，建议先执行高优先级检查行动，收集更多数据后再分析",
+  "ticket": {
+    "title": "[根因处置] Mysql02 引发告警洪水窗口 #887",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-25 12:28",
+    "root_cause_link": "results/reports/window_887.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

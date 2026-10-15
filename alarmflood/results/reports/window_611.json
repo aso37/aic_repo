@@ -1,0 +1,70 @@
+{
+  "window_id": 611,
+  "window": {
+    "st_time": "2021-03-23 11:03:00",
+    "ed_time": "2021-03-23 11:05:00",
+    "n_all_alarms": 10,
+    "minutes": 3
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警窗口内共10条内存使用率超阈值告警，涉及MySQL、Tomcat、Apache、IG和MG等多个组件，均为常驻或半常驻告警，无新发告警。Mysql02出现2次告警，为最可能根因。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "Mysql02在窗口内出现2次内存告警，一次是内存使用率，一次是无缓存内存使用率，证据不足但为最高频告警实体",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.3,
+      "evidence": "apache02出现内存使用率超阈值告警，为半常驻告警，证据不足但与其他内存告警相关",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "IG01",
+      "confidence": 0.3,
+      "evidence": "IG01出现内存使用率超阈值告警，为常驻告警，证据不足但与其他内存告警相关",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02的内存使用情况，分析MySQL进程内存占用和配置参数",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查所有MySQL实例的内存配置和查询性能，优化慢查询",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache02的内存使用情况和配置参数",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查IG01和IG02的内存使用情况和配置参数",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控所有相关组件的内存使用趋势，分析是否存在内存泄漏",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，证据不足，置信度不超过0.4",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #611",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-23 09:08",
+    "root_cause_link": "results/reports/window_611.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

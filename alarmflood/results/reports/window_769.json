@@ -1,0 +1,70 @@
+{
+  "window_id": 769,
+  "window": {
+    "st_time": "2021-03-24 16:13:00",
+    "ed_time": "2021-03-24 16:23:00",
+    "n_all_alarms": 19,
+    "minutes": 11
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "系统出现多台服务器内存使用率告警，主要集中在apache、Tomcat、MySQL和中间件服务，apache01同时出现磁盘繁忙告警，可能存在资源争用或内存泄漏问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache01",
+      "confidence": 0.85,
+      "evidence": "新发告警且同时出现内存和磁盘繁忙告警，与其他服务器内存告警时间相近，可能是根因",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.42,
+      "evidence": "与apache01同类型服务，同时出现内存告警，可能存在相同问题",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql02",
+      "confidence": 0.38,
+      "evidence": "出现内存和无缓存内存告警，数据库服务可能存在内存配置或查询问题",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查apache01进程状态，重启服务并监控内存和磁盘使用情况",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache02和Mysql02内存使用情况，分析日志查找异常",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查所有Tomcat和中间件服务内存使用情况，评估是否需要调整JVM参数",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查系统整体内存使用情况，排查是否存在内存泄漏",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "记录所有服务器内存使用趋势，为后续优化提供数据支持",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG01、MG01、Tomcat02、Tomcat01、MG02、IG02、Tomcat03、Mysql01、Tomcat04的内存告警",
+  "ticket": {
+    "title": "[根因处置] apache01 MEMORY 引发告警洪水窗口 #769",
+    "assignee_team": "Web服务组",
+    "priority": "P1",
+    "related_changes": "",
+    "root_cause_link": "results/reports/window_769.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

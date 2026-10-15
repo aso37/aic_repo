@@ -1,0 +1,70 @@
+{
+  "window_id": 262,
+  "window": {
+    "st_time": "2021-03-06 05:15:00",
+    "ed_time": "2021-03-06 05:27:00",
+    "n_all_alarms": 15,
+    "minutes": 13
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口涉及多个服务器内存使用率告警，主要集中在Mysql02、apache01等服务器，Mysql02出现新发告警且包含磁盘繁忙告警，可能存在资源瓶颈或性能问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.7,
+      "evidence": "Mysql02出现新发告警(磁盘sda繁忙率)，且内存使用率告警，可能存在数据库性能问题或磁盘I/O瓶颈。",
+      "fault_type": "DISK"
+    },
+    {
+      "rank": 2,
+      "entity": "apache01",
+      "confidence": 0.5,
+      "evidence": "apache01出现内存使用率和无缓存内存使用率告警，且告警次数最多(4次)，可能是Web服务器资源不足。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "Mysql01出现内存使用率和无缓存内存使用率告警，可能是数据库服务器资源不足或查询效率问题。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02磁盘sda繁忙情况，分析慢查询日志，优化数据库性能",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache01内存使用情况，分析应用日志，考虑增加服务器资源或优化应用",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql01内存使用情况，分析数据库配置和查询性能",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查MG01和MG02内存使用情况，分析中间件服务状态",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查Tomcat02、Tomcat03和Tomcat04内存使用情况，分析应用日志",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "MG01、MG02、Tomcat02、Tomcat03和Tomcat04的内存使用率告警为常驻告警，暂不处理，优先处理Mysql02和apache01的问题",
+  "ticket": {
+    "title": "[根因处置] Mysql02 DISK 引发告警洪水窗口 #262",
+    "assignee_team": "数据库组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-06 03:17",
+    "root_cause_link": "results/reports/window_262.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

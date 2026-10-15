@@ -1,0 +1,70 @@
+{
+  "window_id": 772,
+  "window": {
+    "st_time": "2021-03-24 16:53:00",
+    "ed_time": "2021-03-24 17:13:00",
+    "n_all_alarms": 33,
+    "minutes": 21
+  },
+  "generated_at": "2026-10-15T20:22:06",
+  "summary": "告警洪水窗口显示多个服务器节点(IG01, IG02, MG01, MG02, Mysql01, Mysql02, Tomcat01, Tomcat02, Tomcat03, Tomcat04, apache02)同时出现内存使用率告警，且无新发告警，表明可能存在系统性内存压力问题",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "Mysql02出现内存使用率告警和无缓存内存使用率告警，且告警次数最多，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.4,
+      "evidence": "apache02出现内存使用率告警，且为半常驻告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "Mysql01出现内存使用率告警和无缓存内存使用率告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查所有内存告警服务器的内存使用情况，分析内存分配和回收机制",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02和Mysql01的数据库配置，优化内存参数设置",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache02的进程状态和配置，评估是否需要重启服务释放内存",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查Tomcat各实例的JVM内存配置，评估是否需要调整堆大小",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控系统整体内存使用趋势，排查是否存在内存泄漏",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "由于窗口内无新发告警，所有根因置信度均不超过0.4，建议进一步收集数据确认问题",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #772",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-24 14:57",
+    "root_cause_link": "results/reports/window_772.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

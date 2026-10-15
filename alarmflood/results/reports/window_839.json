@@ -1,0 +1,70 @@
+{
+  "window_id": 839,
+  "window": {
+    "st_time": "2021-03-25 05:19:00",
+    "ed_time": "2021-03-25 05:22:00",
+    "n_all_alarms": 11,
+    "minutes": 4
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口涉及多个服务器内存使用率告警，Mysql02出现内存和磁盘繁忙率告警，且为唯一新发告警实体，可能存在资源泄漏或查询性能问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.85,
+      "evidence": "Mysql02出现内存使用率告警(05:19:00)和新发磁盘sda繁忙率告警(05:22:00)，是唯一有新发告警的实体，且告警数量最多。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.2,
+      "evidence": "apache02出现内存使用率告警(05:19:00)，为半常驻告警，可能与Mysql02相关联。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "IG02",
+      "confidence": 0.15,
+      "evidence": "IG02出现内存使用率告警(05:19:00)，为常驻告警，可能受整体系统负载影响。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02进程状态，分析慢查询日志，识别高资源消耗的SQL语句",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02磁盘I/O情况，评估是否需要优化磁盘配置或调整MySQL参数",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache02与Mysql02的连接情况，确认是否存在连接泄漏",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查IG02服务器整体负载情况，确认是否受其他服务影响",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控其他服务器内存使用趋势，确认是否存在系统性资源问题",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "MG01、MG02、IG01、Mysql01、Tomcat02、Tomcat03、Tomcat04的内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #839",
+    "assignee_team": "数据库组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-25 03:22",
+    "root_cause_link": "results/reports/window_839.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

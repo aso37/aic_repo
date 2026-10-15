@@ -1,0 +1,70 @@
+{
+  "window_id": 875,
+  "window": {
+    "st_time": "2021-03-25 12:06:00",
+    "ed_time": "2021-03-25 12:09:00",
+    "n_all_alarms": 10,
+    "minutes": 4
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口显示多个服务内存使用率超过阈值，主要集中在MySQL、Tomcat和IG服务，无新发告警，可能存在系统性内存压力问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "无缓存内存和常规内存使用率均超过阈值，出现两次告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "无缓存内存和常规内存使用率均超过阈值，出现两次告警，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Tomcat03",
+      "confidence": 0.4,
+      "evidence": "内存使用率超过阈值，但仅出现一次且无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查所有MySQL和Tomcat服务的内存配置，评估是否需要增加JVM堆内存或优化查询",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查系统整体内存使用情况，确认是否存在内存泄漏或资源竞争",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "分析MySQL慢查询日志，优化高内存消耗的SQL语句",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查IG和MG服务的内存使用模式，评估是否需要调整应用配置",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控内存使用趋势，确认调整后是否恢复正常",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "由于无新发告警，无法确定根本原因，建议先执行高优先级行动收集更多信息",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #875",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-25 10:09",
+    "root_cause_link": "results/reports/window_875.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

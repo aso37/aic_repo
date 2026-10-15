@@ -1,0 +1,70 @@
+{
+  "window_id": 191,
+  "window": {
+    "st_time": "2021-03-05 14:56:00",
+    "ed_time": "2021-03-05 15:11:00",
+    "n_all_alarms": 20,
+    "minutes": 16
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多台服务器内存使用率异常升高，Tomcat03和Mysql01出现新发告警，Tomcat03存在CPU异常升高现象，可能存在内存泄漏或应用性能问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Tomcat03",
+      "confidence": 0.8,
+      "evidence": "出现内存使用率、用户态CPU时间和CPU使用率三项新发告警，且告警时间集中，表明应用可能存在性能问题或内存泄漏。",
+      "fault_type": "JVM"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.55,
+      "evidence": "出现内存使用率、无缓存内存使用率和磁盘繁忙率告警，且为最早出现告警的实体之一，可能存在数据库性能问题。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "apache01",
+      "confidence": 0.47,
+      "evidence": "出现内存使用率和无缓存内存使用率告警，且为半常驻告警，表明Web服务器可能存在资源使用问题。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即重启Tomcat03服务，并监控重启后内存和CPU使用情况",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Tomcat03应用日志，分析是否存在内存泄漏或异常请求",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql01磁盘sdc繁忙情况，考虑优化查询或增加磁盘资源",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查apache01和Tomcat02内存使用情况，评估是否需要调整JVM参数",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控MG01和MG02内存使用情况，评估是否需要扩展资源",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "MG01、MG02、Tomcat02和Tomcat04的内存告警为常驻告警，暂不处理，但需持续监控",
+  "ticket": {
+    "title": "[根因处置] Tomcat03 JVM 引发告警洪水窗口 #191",
+    "assignee_team": "应用服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Tomcat03 窗口前 2 小时内最早告警 03-05 14:44",
+    "root_cause_link": "results/reports/window_191.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

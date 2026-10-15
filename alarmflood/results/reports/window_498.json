@@ -1,0 +1,70 @@
+{
+  "window_id": 498,
+  "window": {
+    "st_time": "2021-03-12 03:57:00",
+    "ed_time": "2021-03-12 04:01:00",
+    "n_all_alarms": 11,
+    "minutes": 5
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口涉及多个系统组件资源告警，主要集中在MySQL磁盘繁忙率和内存使用率超阈值，新发告警出现在Mysql01磁盘sdc繁忙率告警",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql01",
+      "confidence": 0.7,
+      "evidence": "新发告警，磁盘sdc繁忙率超过阈值，且为唯一新发告警实体，可能引发连锁反应",
+      "fault_type": "DISK"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql02",
+      "confidence": 0.43,
+      "evidence": "磁盘sdc繁忙率和内存使用率均告警，且首现时间最早，可能存在资源竞争",
+      "fault_type": "DISK"
+    },
+    {
+      "rank": 3,
+      "entity": "MG01",
+      "confidence": 0.15,
+      "evidence": "内存使用率告警，与多个Tomcat和IG组件同时告警，可能存在系统级资源压力",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql01磁盘sdc繁忙率，分析查询日志，优化慢查询",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02磁盘空间和I/O性能，考虑清理临时文件或扩容",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查所有内存告警组件(MG01、MG02、IG01、IG02、Tomcat01-04)的内存使用情况",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "评估MySQL主从复制状态，确保数据一致性",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控系统整体负载，考虑是否需要临时增加资源或调整应用配置",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "Tomcat01-04、IG01-02、MG01-02内存告警可能为系统级资源压力导致，待根因处理后评估是否抑制",
+  "ticket": {
+    "title": "[根因处置] Mysql01 DISK 引发告警洪水窗口 #498",
+    "assignee_team": "数据库组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql01 窗口前 2 小时内最早告警 03-12 01:57",
+    "root_cause_link": "results/reports/window_498.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

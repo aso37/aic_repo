@@ -1,0 +1,70 @@
+{
+  "window_id": 494,
+  "window": {
+    "st_time": "2021-03-12 03:16:00",
+    "ed_time": "2021-03-12 03:20:00",
+    "n_all_alarms": 12,
+    "minutes": 5
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口显示Mysql02在03:16-03:20期间出现磁盘繁忙率(03:16 sdc, 03:20 sda)和内存使用率(03:19)告警，同时多个关联服务(MG01/MG02, IG01/IG02, Tomcat01-04)出现内存使用率告警，表明可能存在资源争用或性能瓶颈。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.85,
+      "evidence": "Mysql02是唯一出现新发告警的实体，且最先出现磁盘繁忙告警，随后出现内存告警，与其他服务内存告警时间接近，表明可能是根因。",
+      "fault_type": "DISK"
+    },
+    {
+      "rank": 2,
+      "entity": "MG01",
+      "confidence": 0.15,
+      "evidence": "MG01在03:19出现内存告警，与Mysql02内存告警同时发生，可能受Mysql02影响。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "MG02",
+      "confidence": 0.15,
+      "evidence": "MG02在03:17出现内存告警，是较早出现的内存告警之一，可能与Mysql02问题相关。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02磁盘sda和sdc的繁忙率，分析磁盘I/O瓶颈，考虑优化查询或增加磁盘资源",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02内存使用情况，分析是否有内存泄漏或配置不当",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查受影响的应用服务(MG01/MG02, IG01/IG02, Tomcat01-04)的内存配置和日志",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "监控Mysql02及相关服务的资源使用情况，确认问题是否缓解",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "分析Mysql02的慢查询日志，优化可能存在性能问题的SQL",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG01, IG02, Tomcat01-04的内存告警视为次级影响，待Mysql02问题解决后评估是否需要进一步处理",
+  "ticket": {
+    "title": "[根因处置] Mysql02 DISK 引发告警洪水窗口 #494",
+    "assignee_team": "数据库组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-12 01:23",
+    "root_cause_link": "results/reports/window_494.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

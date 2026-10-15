@@ -1,0 +1,70 @@
+{
+  "window_id": 413,
+  "window": {
+    "st_time": "2021-03-07 09:48:00",
+    "ed_time": "2021-03-07 10:03:00",
+    "n_all_alarms": 22,
+    "minutes": 16
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口涉及多个服务器组件，主要集中在Tomcat01、Mysql01和apache01等实体上，内存使用率告警占主导，同时出现CPU和磁盘繁忙率告警。Tomcat01作为新发告警最多的实体，可能是主要根因。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Tomcat01",
+      "confidence": 0.75,
+      "evidence": "Tomcat01在09:54:00同时出现CPU、内存和用户态CPU时间告警，且为新发告警，表明该服务可能存在性能瓶颈或资源泄漏。",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.65,
+      "evidence": "Mysql01在09:48:00出现内存告警，09:52:00出现磁盘繁忙率告警，09:54:00出现无缓存内存告警，表明数据库可能存在查询效率低下或索引问题。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "apache01",
+      "confidence": 0.5,
+      "evidence": "apache01在09:48:00和09:53:00连续出现内存和无缓存内存告警，表明Web服务器可能存在资源使用过高问题。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即重启Tomcat01服务，释放可能存在的资源泄漏",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01的慢查询日志和索引使用情况，优化高负载查询",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache01的配置文件，调整内存相关参数",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "监控Tomcat01重启后的性能指标，确认问题是否解决",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查所有受影响服务器的磁盘空间和I/O性能",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "apache02、Tomcat02、Tomcat03、MG01、MG02、IG01、IG02、Mysql02等实体的内存告警",
+  "ticket": {
+    "title": "[根因处置] Tomcat01 CPU 引发告警洪水窗口 #413",
+    "assignee_team": "应用服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Tomcat01 窗口前 2 小时内最早告警 03-07 08:01",
+    "root_cause_link": "results/reports/window_413.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

@@ -1,0 +1,70 @@
+{
+  "window_id": 891,
+  "window": {
+    "st_time": "2021-03-25 15:09:00",
+    "ed_time": "2021-03-25 15:22:00",
+    "n_all_alarms": 23,
+    "minutes": 14
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多台服务器内存使用率超过阈值，Redis02出现新发CPU相关告警，可能存在内存泄漏或资源竞争问题",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Redis02",
+      "confidence": 0.75,
+      "evidence": "Redis02出现新发CPU使用率异常升高和CPU使用率超过阈值告警，且是唯一有新发告警的实体",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql02",
+      "confidence": 0.44,
+      "evidence": "Mysql02出现内存使用率超过阈值和无缓存内存使用率超过阈值告警，且告警次数较多",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.31,
+      "evidence": "Mysql01出现内存使用率超过阈值和无缓存内存使用率超过阈值告警，告警次数较多",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即检查Redis02进程状态，分析CPU使用率异常升高的原因，考虑重启Redis服务",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02和Mysql01的内存使用情况，分析慢查询和查询优化",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Tomcat系列服务器的内存配置和应用程序内存泄漏情况",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查apache02的内存使用情况和配置参数",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控所有受影响服务器的资源使用情况，确保系统稳定",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG01、MG01、MG02、Tomcat01、Tomcat02、Tomcat03、Tomcat04的内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] Redis02 CPU 引发告警洪水窗口 #891",
+    "assignee_team": "缓存组",
+    "priority": "P1",
+    "related_changes": "",
+    "root_cause_link": "results/reports/window_891.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

@@ -1,0 +1,70 @@
+{
+  "window_id": 451,
+  "window": {
+    "st_time": "2021-03-09 06:43:00",
+    "ed_time": "2021-03-09 06:44:00",
+    "n_all_alarms": 10,
+    "minutes": 2
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口涉及10条证据，其中2条为Redis02的新发告警（CPU使用率异常升高和用户态CPU时间异常升高），8条为常驻告警涉及多个服务（MySQL、IG、MG、Tomcat）的内存使用率超过阈值。Redis02作为唯一有新发告警的实体，被判定为最可能的根因。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Redis02",
+      "confidence": 0.85,
+      "evidence": "Redis02有2条新发告警（CPU使用率异常升高和用户态CPU时间异常升高），且是唯一有新发告警的实体，时间最早于其他告警",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql02",
+      "confidence": 0.15,
+      "evidence": "内存使用率超过阈值，与Redis02在同一时间点出现告警，可能是连锁反应",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Tomcat01",
+      "confidence": 0.15,
+      "evidence": "内存使用率超过阈值，与Redis02告警时间点相同，可能受Redis影响",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即检查Redis02的CPU使用率异常升高原因，检查是否有慢查询或大量键操作",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Redis02的内存使用情况，考虑是否需要扩容或优化数据结构",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "监控受影响的服务（MySQL、Tomcat等）性能，确保系统稳定性",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "分析Redis02的日志，查找可能导致CPU异常升高的具体操作",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "评估是否需要临时限制Redis02的连接数或操作频率",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG02、MG01、Mysql01、MG02、Tomcat03、Tomcat04的内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] Redis02 CPU 引发告警洪水窗口 #451",
+    "assignee_team": "缓存组",
+    "priority": "P1",
+    "related_changes": "",
+    "root_cause_link": "results/reports/window_451.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

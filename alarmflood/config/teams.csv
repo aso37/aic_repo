@@ -1,0 +1,15 @@
+entity,team
+IG01,接入网关组
+IG02,接入网关组
+MG01,消息中间件组
+MG02,消息中间件组
+Mysql01,数据库组
+Mysql02,数据库组
+Redis01,缓存组
+Redis02,缓存组
+Tomcat01,应用服务组
+Tomcat02,应用服务组
+Tomcat03,应用服务组
+Tomcat04,应用服务组
+apache01,Web服务组
+apache02,Web服务组

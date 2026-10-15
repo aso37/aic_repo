@@ -1,0 +1,65 @@
+{
+  "window_id": 137,
+  "window": {
+    "st_time": "2021-03-05 05:04:00",
+    "ed_time": "2021-03-05 05:18:00",
+    "n_all_alarms": 19,
+    "minutes": 15
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示Tomcat02和apache01出现异常，Tomcat02用户态CPU时间升高，多个服务内存使用率超过阈值，apache01磁盘sda繁忙率升高",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Tomcat02",
+      "confidence": 0.81,
+      "evidence": "用户态CPU时间异常升高，CPU使用率超过阈值，新发告警次数最多，首现时间最早",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "apache01",
+      "confidence": 0.42,
+      "evidence": "内存使用率、无缓存内存使用率和磁盘sda繁忙率均超过阈值，出现半常驻和新发告警",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.25,
+      "evidence": "内存使用率和无缓存内存使用率超过阈值，常驻告警，但无新发告警",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Tomcat02进程，分析CPU使用率异常原因，考虑重启或扩容",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache01服务内存使用情况，分析磁盘sda繁忙原因",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql01内存使用情况，优化查询或增加内存分配",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查MG02和Tomcat04内存使用情况，确认是否与主要问题相关",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG01、MG01、Mysql02内存使用率告警为常驻告警，暂不处理",
+  "ticket": {
+    "title": "[根因处置] Tomcat02 CPU 引发告警洪水窗口 #137",
+    "assignee_team": "应用服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Tomcat02 窗口前 2 小时内最早告警 03-05 04:42",
+    "root_cause_link": "results/reports/window_137.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

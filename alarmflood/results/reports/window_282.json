@@ -1,0 +1,70 @@
+{
+  "window_id": 282,
+  "window": {
+    "st_time": "2021-03-06 08:52:00",
+    "ed_time": "2021-03-06 09:07:00",
+    "n_all_alarms": 24,
+    "minutes": 16
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口分析：共14条证据，无新发告警，11条常驻告警，3条半常驻告警。主要集中在内存使用率告警，涉及MySQL、Apache、Tomcat、MG和IG等多个组件。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache01",
+      "confidence": 0.4,
+      "evidence": "无新发告警，证据不足。apache01有4条告警，包括内存使用率和无缓存内存使用率超标，是出现告警最多的实体。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "无新发告警，证据不足。Mysql01有4条告警，包括内存使用率和无缓存内存使用率超标，与apache01同时出现。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "无新发告警，证据不足。Mysql02有2条告警，包括内存使用率和磁盘sdc繁忙率超标，是唯一出现磁盘问题的实体。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查apache01和Mysql01的内存使用情况，分析内存泄漏或配置不当问题",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql02的磁盘sdc繁忙情况，分析磁盘I/O瓶颈",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查所有Tomcat实例的内存配置和JVM参数",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查MG01和MG02的内存使用情况，分析内存管理策略",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查IG01和IG02的内存使用情况，分析内存分配策略",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，无法确定根因，建议进一步调查内存使用模式",
+  "ticket": {
+    "title": "[根因处置] apache01 MEMORY 引发告警洪水窗口 #282",
+    "assignee_team": "Web服务组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：apache01 窗口前 2 小时内最早告警 03-06 06:59",
+    "root_cause_link": "results/reports/window_282.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

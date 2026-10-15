@@ -1,0 +1,70 @@
+{
+  "window_id": 45,
+  "window": {
+    "st_time": "2021-03-04 11:13:00",
+    "ed_time": "2021-03-04 11:31:00",
+    "n_all_alarms": 19,
+    "minutes": 19
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口涉及多个服务器资源告警，主要集中在内存和磁盘使用率超过阈值，apache01为新发告警实体，内存和磁盘资源紧张。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache01",
+      "confidence": 0.85,
+      "evidence": "新发告警实体，内存使用率和无缓存内存使用率告警，磁盘sda繁忙率新发告警，总告警数5条，首现时间最早",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql02",
+      "confidence": 0.33,
+      "evidence": "磁盘sdc繁忙率和内存使用率告警，总告警数4条，与apache01同时出现资源告警",
+      "fault_type": "DISK"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.29,
+      "evidence": "无缓存内存使用率和内存使用率告警，总告警数4条，与apache01同时出现资源告警",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查apache01进程内存使用情况，识别高内存消耗进程并优化",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache01磁盘sda繁忙率，分析磁盘IO瓶颈",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql02磁盘sdc繁忙率和内存使用情况",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查Mysql01无缓存内存使用率和内存使用情况",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控IG02和MG01内存使用率，防止问题扩散",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "MG02、IG02、MG01内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] apache01 MEMORY 引发告警洪水窗口 #45",
+    "assignee_team": "Web服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：apache01 窗口前 2 小时内最早告警 03-04 09:19",
+    "root_cause_link": "results/reports/window_45.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

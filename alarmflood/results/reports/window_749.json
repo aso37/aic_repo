@@ -1,0 +1,70 @@
+{
+  "window_id": 749,
+  "window": {
+    "st_time": "2021-03-24 12:30:00",
+    "ed_time": "2021-03-24 12:34:00",
+    "n_all_alarms": 10,
+    "minutes": 5
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口显示多个服务器组件内存使用率超过阈值，包括MySQL、Tomcat、Apache和中间件组件，时间集中在12:30-12:34期间，无新发告警。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "Mysql02在12:33和12:34两次触发内存告警，包括常规内存和无缓存内存，是唯一出现两次告警的实体，但无新发告警，证据不足。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "apache02",
+      "confidence": 0.3,
+      "evidence": "apache02在12:30触发内存告警，作为半常驻告警，可能是系统内存压力的早期指标，但无新发告警，证据不足。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "MG01",
+      "confidence": 0.3,
+      "evidence": "MG01在12:30触发内存告警，作为常驻告警，与其他组件同时出现内存问题，可能反映系统整体内存压力，但无新发告警，证据不足。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Mysql02的内存使用情况，分析查询日志和慢查询，优化内存配置参数",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查所有受影响服务器的内存使用情况，包括Tomcat、Apache和中间件组件",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查系统整体内存使用情况，排查是否有内存泄漏或资源竞争问题",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查是否有近期部署或配置变更可能导致内存使用增加",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "考虑临时增加服务器内存或调整JVM参数缓解当前压力",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "由于窗口内无新发告警，所有根因置信度均不超过0.4，建议收集更多数据后重新分析",
+  "ticket": {
+    "title": "[根因处置] Mysql02 MEMORY 引发告警洪水窗口 #749",
+    "assignee_team": "数据库组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql02 窗口前 2 小时内最早告警 03-24 10:34",
+    "root_cause_link": "results/reports/window_749.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

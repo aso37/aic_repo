@@ -1,0 +1,70 @@
+{
+  "window_id": 189,
+  "window": {
+    "st_time": "2021-03-05 14:25:00",
+    "ed_time": "2021-03-05 14:40:00",
+    "n_all_alarms": 17,
+    "minutes": 16
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多个服务器(Mysql01, apache01, MG02, MG01, Tomcat04, Tomcat02, Mysql02)出现内存使用率超标，其中Mysql01和apache01出现内存及无缓存内存告警，Mysql02出现磁盘繁忙率和内存告警。无新发告警，均为常驻或半常驻告警。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "apache01",
+      "confidence": 0.4,
+      "evidence": "出现内存使用率和无缓存内存使用率超标告警，总告警次数4次，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.4,
+      "evidence": "出现内存使用率和无缓存内存使用率超标告警，总告警次数3次，但无新发告警，证据不足",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "出现磁盘繁忙率和内存使用率超标告警，总告警次数2次，但无新发告警，证据不足",
+      "fault_type": "DISK"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查apache01服务器内存使用情况，分析内存泄漏可能，重启apache服务",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01服务器内存配置和查询性能，优化慢查询",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql02服务器磁盘sdc繁忙情况，分析磁盘IO瓶颈",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查MG01和MG02服务器内存使用情况，分析内存分配",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查Tomcat02和Tomcat04服务器JVM内存配置和应用程序内存使用",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无新发告警，均为常驻或半常驻告警，可能为历史问题持续存在或告警阈值设置过低",
+  "ticket": {
+    "title": "[根因处置] apache01 MEMORY 引发告警洪水窗口 #189",
+    "assignee_team": "Web服务组",
+    "priority": "P3",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：apache01 窗口前 2 小时内最早告警 03-05 12:31",
+    "root_cause_link": "results/reports/window_189.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

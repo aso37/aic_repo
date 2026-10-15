@@ -1,0 +1,70 @@
+{
+  "window_id": 210,
+  "window": {
+    "st_time": "2021-03-05 19:33:00",
+    "ed_time": "2021-03-05 19:45:00",
+    "n_all_alarms": 17,
+    "minutes": 13
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口显示多台服务器出现内存使用率告警，集中在Apache、MySQL、Tomcat和IG01服务器。IG01出现新发CPU相关告警，且为首个出现异常的实体，可能为根因。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "IG01",
+      "confidence": 0.75,
+      "evidence": "IG01是首个出现异常的实体，且出现新发CPU相关告警，随后多台服务器出现内存告警，表明可能是源头",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "apache01",
+      "confidence": 0.5,
+      "evidence": "apache01出现内存相关告警，且告警次数较多，可能是受IG01影响或自身问题",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql01",
+      "confidence": 0.39,
+      "evidence": "Mysql01出现内存相关告警，且告警次数较多，可能是受上游影响或自身资源不足",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查IG01服务器CPU使用率异常原因，分析进程日志，找出高CPU占用进程",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "重启IG01服务器上的异常进程，若无法解决则考虑重启服务器",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查apache01和Mysql01服务器内存使用情况，分析是否有内存泄漏",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "监控其他受影响服务器(MG01、MG02、Tomcat01-04、Mysql02)状态",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "记录此次事件处理过程，评估是否需要调整告警阈值或优化系统配置",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "无",
+  "ticket": {
+    "title": "[根因处置] IG01 CPU 引发告警洪水窗口 #210",
+    "assignee_team": "接入网关组",
+    "priority": "P1",
+    "related_changes": "",
+    "root_cause_link": "results/reports/window_210.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

@@ -1,0 +1,70 @@
+{
+  "window_id": 50,
+  "window": {
+    "st_time": "2021-03-04 12:16:00",
+    "ed_time": "2021-03-04 12:34:00",
+    "n_all_alarms": 19,
+    "minutes": 19
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口涉及多个服务器组件，包括Redis、Apache、MySQL和MG系列服务器，主要表现为内存使用率异常升高，Redis02出现新发CPU异常告警",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Redis02",
+      "confidence": 0.7,
+      "evidence": "Redis02出现新发CPU异常告警，时间最早，可能引发连锁反应导致其他服务器内存压力增大",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "apache01",
+      "confidence": 0.5,
+      "evidence": "apache01出现内存和无缓存内存告警，总告警次数较多，可能受到Redis02问题影响",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql02",
+      "confidence": 0.4,
+      "evidence": "Mysql02出现内存和磁盘繁忙率告警，可能受到上游Redis和Apache问题影响",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即检查Redis02进程状态，分析CPU异常升高原因，考虑重启或扩容",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache01内存使用情况，分析缓存配置，优化内存使用",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql02磁盘I/O情况，分析磁盘繁忙率高的原因",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查MG01、MG02、Mysql01内存使用情况，确认是否存在共同问题",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "记录所有服务器性能指标，为后续分析提供数据支持",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG02内存告警暂时抑制，待主要问题解决后再分析",
+  "ticket": {
+    "title": "[根因处置] Redis02 CPU 引发告警洪水窗口 #50",
+    "assignee_team": "缓存组",
+    "priority": "P1",
+    "related_changes": "",
+    "root_cause_link": "results/reports/window_50.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

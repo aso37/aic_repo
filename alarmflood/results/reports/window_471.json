@@ -1,0 +1,70 @@
+{
+  "window_id": 471,
+  "window": {
+    "st_time": "2021-03-10 06:34:00",
+    "ed_time": "2021-03-10 06:39:00",
+    "n_all_alarms": 10,
+    "minutes": 6
+  },
+  "generated_at": "2026-10-15T20:22:09",
+  "summary": "告警洪水窗口涉及多个系统组件，Tomcat02出现新发告警且CPU相关指标异常升高，同时多个MySQL和Tomcat实例内存使用率超过阈值",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Tomcat02",
+      "confidence": 0.85,
+      "evidence": "06:38-06:39连续出现CPU使用率异常升高和用户态CPU时间异常升高，为新发告警",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql01",
+      "confidence": 0.33,
+      "evidence": "内存使用率和无缓存内存使用率同时超过阈值，表明内存资源紧张",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "Mysql02",
+      "confidence": 0.21,
+      "evidence": "内存使用率超过阈值且磁盘sdc繁忙率异常，存在I/O瓶颈",
+      "fault_type": "DISK"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "检查Tomcat02进程，分析CPU异常升高原因，考虑重启或优化应用代码",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01内存使用情况，优化查询或增加内存配置",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查Mysql02磁盘sdc繁忙情况，考虑优化磁盘I/O或迁移数据",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查Tomcat03和Tomcat04内存使用情况，评估是否需要扩容",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查IG02和MG02内存使用情况，评估系统整体资源状况",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "Tomcat02内存使用率未超过阈值，暂不纳入根因",
+  "ticket": {
+    "title": "[根因处置] Tomcat02 CPU 引发告警洪水窗口 #471",
+    "assignee_team": "应用服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Tomcat02 窗口前 2 小时内最早告警 03-10 06:22",
+    "root_cause_link": "results/reports/window_471.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

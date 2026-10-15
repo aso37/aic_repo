@@ -1,0 +1,70 @@
+{
+  "window_id": 357,
+  "window": {
+    "st_time": "2021-03-06 22:31:00",
+    "ed_time": "2021-03-06 22:43:00",
+    "n_all_alarms": 14,
+    "minutes": 13
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口显示多台服务器内存使用率异常升高，其中IG02出现新发告警，用户态CPU时间异常升高，可能存在系统资源瓶颈或应用程序性能问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "IG02",
+      "confidence": 0.7,
+      "evidence": "IG02出现新发告警，用户态CPU时间异常升高，且与其他服务器内存告警时间相近，可能存在性能问题。",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "apache01",
+      "confidence": 0.6,
+      "evidence": "apache01出现多次内存使用率告警，包括普通内存和无缓存内存，表明Web服务器存在内存压力。",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "MG02",
+      "confidence": 0.5,
+      "evidence": "MG02出现内存使用率告警，且与多个Tomcat和MySQL服务器告警时间相近，可能存在集群资源问题。",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即检查IG02服务器进程，分析CPU使用率异常原因，必要时重启相关服务",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查apache01服务器内存使用情况，优化Web服务器配置或增加内存资源",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "检查MG02服务器内存使用情况，分析与其他服务器告警的关联性",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查所有Tomcat和MySQL服务器内存使用情况，评估是否需要增加服务器资源",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "监控系统整体资源使用趋势，评估是否存在系统级资源瓶颈",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "Tomcat04、Tomcat02、Tomcat03、Mysql02、Mysql01、MG01的内存告警",
+  "ticket": {
+    "title": "[根因处置] IG02 CPU 引发告警洪水窗口 #357",
+    "assignee_team": "接入网关组",
+    "priority": "P1",
+    "related_changes": "",
+    "root_cause_link": "results/reports/window_357.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

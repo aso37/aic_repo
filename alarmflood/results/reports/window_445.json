@@ -1,0 +1,70 @@
+{
+  "window_id": 445,
+  "window": {
+    "st_time": "2021-03-09 02:26:00",
+    "ed_time": "2021-03-09 02:29:00",
+    "n_all_alarms": 11,
+    "minutes": 4
+  },
+  "generated_at": "2026-10-15T20:22:08",
+  "summary": "告警洪水窗口涉及Tomcat02、Tomcat03、Tomcat04三个新发告警实体，同时出现多个内存使用率告警和磁盘繁忙告警，疑似Tomcat服务异常导致连锁反应。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Tomcat03",
+      "confidence": 0.85,
+      "evidence": "02:26:00用户态CPU异常升高，02:27:00内存使用率超阈值，02:28:00再次内存告警，是首个出现CPU异常的节点",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 2,
+      "entity": "Tomcat04",
+      "confidence": 0.85,
+      "evidence": "02:27:00内存使用率超阈值，02:29:00用户态CPU异常升高，与Tomcat03症状相似",
+      "fault_type": "CPU"
+    },
+    {
+      "rank": 3,
+      "entity": "Tomcat02",
+      "confidence": 0.65,
+      "evidence": "02:26:00用户态CPU异常升高，虽无后续内存告警但与其他Tomcat节点同时出现CPU异常",
+      "fault_type": "CPU"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即重启Tomcat03和Tomcat04服务，缓解CPU异常问题",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Tomcat03和Tomcat04的应用日志，分析CPU异常原因",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "监控Tomcat02状态，准备必要时重启",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查Mysql02磁盘繁忙情况，评估是否需要优化",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "检查所有内存使用率超阈值的节点，评估是否需要扩容",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "MG02、IG02、MG01、Mysql01、Mysql02的内存告警和Mysql02的磁盘繁忙告警",
+  "ticket": {
+    "title": "[根因处置] Tomcat03 CPU 引发告警洪水窗口 #445",
+    "assignee_team": "应用服务组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Tomcat03 窗口前 2 小时内最早告警 03-09 00:34",
+    "root_cause_link": "results/reports/window_445.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

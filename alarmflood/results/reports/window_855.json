@@ -1,0 +1,70 @@
+{
+  "window_id": 855,
+  "window": {
+    "st_time": "2021-03-25 08:21:00",
+    "ed_time": "2021-03-25 08:32:00",
+    "n_all_alarms": 18,
+    "minutes": 12
+  },
+  "generated_at": "2026-10-15T20:22:07",
+  "summary": "告警洪水窗口涉及多个服务器内存使用率超过阈值，主要集中在MySQL服务器，Mysql01出现新发告警且磁盘繁忙率异常，可能存在内存泄漏或查询性能问题。",
+  "root_causes": [
+    {
+      "rank": 1,
+      "entity": "Mysql01",
+      "confidence": 0.77,
+      "evidence": "出现新发告警，内存使用率、磁盘sdc繁忙率和无缓存内存使用率均超过阈值，总告警次数最多",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 2,
+      "entity": "Mysql02",
+      "confidence": 0.42,
+      "evidence": "内存使用率和磁盘sdc繁忙率均超过阈值，与Mysql01同时出现异常，可能存在关联",
+      "fault_type": "MEMORY"
+    },
+    {
+      "rank": 3,
+      "entity": "apache02",
+      "confidence": 0.35,
+      "evidence": "内存使用率超过阈值，半常驻告警，可能受MySQL服务器影响或自身配置问题",
+      "fault_type": "MEMORY"
+    }
+  ],
+  "actions": [
+    {
+      "order": 1,
+      "action": "立即检查Mysql01的慢查询日志和当前运行进程，识别高资源消耗查询",
+      "priority": "高"
+    },
+    {
+      "order": 2,
+      "action": "检查Mysql01和Mysql02的磁盘sdc繁忙情况，考虑优化磁盘I/O或调整配置",
+      "priority": "高"
+    },
+    {
+      "order": 3,
+      "action": "重启Mysql01服务释放内存资源，并监控重启后状态",
+      "priority": "中"
+    },
+    {
+      "order": 4,
+      "action": "检查apache02的内存配置和当前连接数，考虑调整JVM参数",
+      "priority": "中"
+    },
+    {
+      "order": 5,
+      "action": "记录所有受影响服务器的内存使用趋势，分析是否存在内存泄漏",
+      "priority": "低"
+    }
+  ],
+  "suppressed": "IG02、MG01、IG01、Tomcat03、MG02、Tomcat04、Tomcat02、Tomcat01的内存使用率告警",
+  "ticket": {
+    "title": "[根因处置] Mysql01 MEMORY 引发告警洪水窗口 #855",
+    "assignee_team": "数据库组",
+    "priority": "P1",
+    "related_changes": "模拟关联（数据集无变更记录，非真实变更单）：Mysql01 窗口前 2 小时内最早告警 03-25 06:26",
+    "root_cause_link": "results/reports/window_855.json"
+  },
+  "disclaimer": "本处置单由 AI 生成，供值班人员参考，执行前请核对现场情况。"
+}

@@ -33,24 +33,35 @@ DAYS = ["0304", "0305", "0306", "0307", "0309", "0310", "0312", "0323", "0324", 
 #
 # 【2026-10-14 规则校准，结案记录】
 # 原方案对全部 10 个 KPI 统一使用阈值 90，实测只有 7 条触发。
-# 用真实数据（10 天 metric）逐 KPI 校准后查明：**KPI 名称全部正确（10/10 存在），
-# 问题出在阈值**——各 KPI 的正常范围差异极大，统一 90 不可行：
+# 用**10 天全量**数据逐 KPI 复核后查明：**KPI 名称全部正确（10/10 存在）**，问题在阈值。
 #
-#   KPI                                 常态      实测 max   原阈值90  处置
-#   MEMUsedMemPerc                      84%       98.0      可触发    保留
-#   NoCacheMemPerc                      45.7%     92.9      可触发    保留
-#   CPUCpuUtil                          25.7%     97.3      可触发    保留
-#   CPUUserTime                         25.1%     96.2      阈55 可触发 保留
-#   sdc_DSKPercentBusy                  1.8%      100.0     可触发    保留
-#   sda_DSKPercentBusy                  0%        100.4     可触发    保留
-#   FSInodeUsedPercent                  16.4%     29.93     不可达 →  阈值改 20
-#   sdb_DSKPercentBusy                  0%        36.0      不可达 →  阈值改 30
-#   ens160_NETBandwidthUtil             0(0~1比例) 0.032     不可达 →  换 TCP-FIN-WAIT
-#   SWPTotSwapUsedPercent               恒为 0     0.0       不可达 →  删除（系统未启用 Swap）
+#   KPI（简称）              10天触发次数   10天max    处置
+#   MEMUsedMemPerc              87,055      98.000    保留
+#   NoCacheMemPerc              13,871      —         保留
+#   CPUUserTime（阈值 55）         183      96.2      保留
+#   CPUCpuUtil                      78      99.996    保留
+#   sdc_DSKPercentBusy             253      100.0     保留
+#   sda_DSKPercentBusy              25      100.4     保留
+#   sdb_DSKPercentBusy              13      100.400   曾误判为不可达 → **已回退到 90**
+#   TCP-FIN-WAIT（新增）         1,889      —         新增（替代带宽指标）
+#   FSInodeUsedPercent               0      29.933    → 试改 20 后否决，整条删除
+#   ens160_NETBandwidthUtil          0      0.368     → 换 TCP-FIN-WAIT（是 0~1 比例）
+#   SWPTotSwapUsedPercent            0      0.000     → 删除（系统未启用 Swap）
 #
-# 其中最重要的收获：换成 TCP-FIN-WAIT 后，NETWORK 型故障窗口的覆盖率从
-# 20/45 提升到 32/45（71%），而 CPU/DISK/MEMORY/JVM 全部 0% —— 判别性极强。
-# 复核脚本：scripts/probe_rule_coverage.py
+# ⚠️ **方法论教训（务必记住）**：判定"阈值是否可达"**必须在全部 10 天上验证，不能只看一天**。
+#    sdb_DSKPercentBusy 在 0304 的 max 只有 36.0，看上去 90 不可达；
+#    但 0305/0306/0310/0325 的 max 分别是 100.0/100.0/100.4/100.0 —— **原阈值其实可达**，
+#    10 天共触发 13 次。据此把它改到 30 是**基于单日样本的错误改动**，已回退。
+#    逐日 max 对照：36.00 100.00 100.00 39.20 93.60 100.40 34.40 24.20 38.00 100.00
+#    （对照组 FSInodeUsedPercent 逐日 max 恒为 29.933，才是真正的不可达）
+#    复核脚本 scripts/probe_rule_coverage.py 已改为默认扫描全部 10 天。
+#
+# ⚠️ **阈值判据（统一适用）**：阈值该不该改，判据**不是"够不够得到"**，而是
+#    "**改完之后对目标故障类型的判别力是否提升，且噪声代价是否可接受**"：
+#    · Inode 试改 20 → 6,276 条常驻告警、CPU 型 Top-1 96%→79%、DISK 无改善 → 否决
+#    · sdb 改 30    → 仅 27 条告警(0.17%)、16 个 DISK 窗口只 3 个受影响、无提升 → 回退
+#    · 唯一经严格验证的改动是**换指标**：NETBandwidthUtil → TCP-FIN-WAIT
+#      （NETWORK 型窗内 71% 有信号，CPU/DISK/MEMORY/JVM 全部 0%）
 RULES = [
     ("OSLinux-CPU_CPU_CPUCpuUtil", 90.0, "CPU使用率{v}%超过阈值90%", 2),
     ("OSLinux-CPU_CPU_CPUUserTime", 55.0, "用户态CPU时间{v}%异常升高", 3),
@@ -62,8 +73,14 @@ RULES = [
     #      而 DISK 型毫无改善（2/11 → 2/17）。**净损失，故整条删除。**
     #      （这是个有记录的被否决方案，答辩可讲"我们试过并量化了副作用"）
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sda_DSKPercentBusy", 90.0, "磁盘sda繁忙率{v}%超过阈值90%", 2),
-    # [改] 原阈值 90：实测该指标全程 max=36.0（常态 0），90 永远不可能达到。阈值改为 30。
-    ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKPercentBusy", 30.0, "磁盘sdb繁忙率{v}%异常", 2),
+    # [回退] sdb_DSKPercentBusy 曾从 90 改到 30，理由是"实测 max=36，90 不可达"。
+    #        但按统一判据复测（**必须证明收益，而不是"够不到就调低"**）：
+    #          阈值 30 时该规则仅产生 27 条告警（占全部 0.17%），
+    #          在 16 个可评测 DISK 窗口中只有 3 个窗内出现根因实体的 sdb 告警，
+    #          对 DISK 型判别力无可测得的提升。
+    #        → **无证据支持，回退到原阈值 90**（回退后不再触发，等同不存在，仅为可比性保留）
+    #        这条回退本身就是"判据统一"的体现：不能因为阈值够不到就调低它。
+    ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKPercentBusy", 90.0, "磁盘sdb繁忙率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdc_DSKPercentBusy", 90.0, "磁盘sdc繁忙率{v}%超过阈值90%", 2),
     # [换] 原为 ens160 NETBandwidthUtil（阈值 90）：实测该指标是 0~1 的比例，
     #      全程 max=0.032（即 3.2%），阈值 90 永远不可能达到；且该网络负载极低，无量纲可用性。

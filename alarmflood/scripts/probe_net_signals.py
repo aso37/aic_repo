@@ -1,11 +1,28 @@
-"""临时：FIN-WAIT 的误报率检查 —— 这是决定能不能加规则的关键。用完即删。"""
+# -*- coding: utf-8 -*-
+"""网络故障信号探查：哪个指标能识别网络型故障？
+
+这是本次规则校准的**关键证据脚本**（对应 results/experiments.md 的「已结案」块）：
+  A) FIN-WAIT / CLOSE-WAIT 的整体非零率（即误报率）
+  B) 按实体拆分，看哪些实体会出现 FIN-WAIT > 0
+  C) 若加规则「FIN-WAIT > 0」，能为多少故障窗提供证据（并对照其他故障类型）
+
+**结论**：TCP-FIN-WAIT 的非零样本仅占 1.18%，却在 **71%** 的网络故障窗内出现，
+而对 CPU/DISK/MEMORY/JVM 命中 **0%** —— 故用它替换原 `ens160 NETBandwidthUtil`。
+
+用法（在 alarmflood/ 目录下）
+    $env:AIOPS_RAW = "<AIOps2021 数据集目录：其下应有 aiops21_groundtruth.csv 与 aiops2021-2/>"
+    .venv\\Scripts\\python.exe scripts\\probe_net_signals.py
+"""
+import os
 from pathlib import Path
+
 import pandas as pd
 
-RAW = Path(r"D:\AI_Workspace\dsh_projects\AIC\aiops2021-main\AIOps2021\aiops2021-2")
-R = Path(r"D:\AI_Workspace\dsh_projects\AIC\aic_repo\alarmflood")
+ROOT = Path(__file__).parents[1]
+RAW = Path(os.environ.get("AIOPS_RAW", "E:/aic_data/AIOps2021")) / "aiops2021-2"
+R = ROOT
 FIN = "OSLinux-OSLinux_NETWORK_NETWORK_TCP-FIN-WAIT"
-CW  = "OSLinux-OSLinux_NETWORK_NETWORK_TCP-CLOSE-WAIT"
+CW = "OSLinux-OSLinux_NETWORK_NETWORK_TCP-CLOSE-WAIT"
 
 print("=" * 88)
 print("A) 整体误报率：FIN-WAIT / CLOSE-WAIT 非零的样本占比（10 天全量）")

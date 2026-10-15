@@ -1,8 +1,14 @@
-# AlarmFlood Copilot 依赖（conda aic 环境实测版本，Python 3.10.22）
-# 安装：G:\anaconda3\envs\aic\python.exe -m pip install -r requirements.txt
+# AlarmFlood Copilot 运行环境依赖（唯一清单，Python 3.10）
+#
+# 说明：由 A/B/C 三份清单合并——以 C 在 conda aic 环境实测的锁定版本为基，
+#       补上 B 的 LLM 模块必需的 openai；scikit-learn 在开工方案技术栈里列过，
+#       但当前代码库未 import（D6 融合用简单网格搜索，不依赖 sklearn），故不纳入。
+# 安装（在 alarmflood/ 目录下执行）：
+#   python -m pip install -r requirements.txt
 pandas==2.3.3
 numpy==2.2.6
 pyarrow==25.0.1
 drain3==0.9.11
-streamlit==1.65.0
 matplotlib==3.10.9
+streamlit==1.65.0
+openai==3.29.0

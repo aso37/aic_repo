@@ -1,0 +1,92 @@
+# L2 自建试点监控栈（云服务器 Docker）
+#
+# 拓扑（刻意做成"一处故障 → 上下游连环告警"的经典告警洪水场景）：
+#   svc-api-1/2/3  ──调用──>  svc-db
+#   注入 svc-db CPU 饱和 → db 自身 CPU 告警（根因）
+#                        → api 调用超时堆积，延迟/错误率告警（衍生告警）
+#                        → 宿主机 CPU 上升（基础设施层告警）
+#
+# 真值已知：注入目标是 svc-db，因此根因 = svc-db（可算 Top-1 命中率）
+services:
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: pilot-prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    ports:
+      - "9090:9090"
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: pilot-alertmanager
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: pilot-node-exporter
+    volumes:
+      - /:/host:ro,rslave
+    command: ["--path.rootfs=/host"]
+    ports:
+      - "9100:9100"
+
+  # 告警接收端：把 Alertmanager 的 webhook 落盘成 JSONL（后续 loader 的输入）
+  sink:
+    build: ./sink
+    container_name: pilot-sink
+    volumes:
+      - ./data:/data
+    ports:
+      - "9099:9099"
+
+  svc-db:
+    build: ./app
+    container_name: svc-db
+    environment:
+      SVC_NAME: svc-db
+      ROLE: db
+      PEER: ""
+    ports:
+      - "18001:8000"
+
+  svc-api-1:
+    build: ./app
+    container_name: svc-api-1
+    environment:
+      SVC_NAME: svc-api-1
+      ROLE: api
+      PEER: "http://svc-db:8000"
+    ports:
+      - "18011:8000"
+
+  svc-api-2:
+    build: ./app
+    container_name: svc-api-2
+    environment:
+      SVC_NAME: svc-api-2
+      ROLE: api
+      PEER: "http://svc-db:8000"
+    ports:
+      - "18012:8000"
+
+  svc-api-3:
+    build: ./app
+    container_name: svc-api-3
+    environment:
+      SVC_NAME: svc-api-3
+      ROLE: api
+      PEER: "http://svc-db:8000"
+    ports:
+      - "18013:8000"
+
+volumes:
+  prom-data:

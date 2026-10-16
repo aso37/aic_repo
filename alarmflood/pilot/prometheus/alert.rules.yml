@@ -1,0 +1,76 @@
+# 告警规则（10 条，刻意与 AIOps2021 loader 的规则集结构对齐：5 条服务级 + 5 条主机级）
+# 阈值在任何评测之前一次定死，全程不再修改 —— 与 AIOps 主实验同一条纪律。
+groups:
+  - name: service-alarms
+    rules:
+      - alert: SvcCPUSaturation
+        expr: svc_cpu_percent > 90
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '{{ $labels.svc }} CPU使用率{{ $value | printf "%.1f" }}%超过阈值90%'
+
+      - alert: SvcMemoryHigh
+        expr: svc_memory_mb > 400
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '{{ $labels.svc }} 内存占用{{ $value | printf "%.0f" }}MB超过阈值400MB'
+
+      - alert: SvcLatencyHigh
+        expr: histogram_quantile(0.95, sum by (le, svc) (rate(svc_request_duration_seconds_bucket[1m]))) > 0.5
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '{{ $labels.svc }} 请求P95延迟{{ $value | printf "%.2f" }}秒超过阈值0.5秒'
+
+      - alert: SvcErrorRateHigh
+        expr: sum by (svc) (rate(svc_errors_total[1m])) / clamp_min(sum by (svc) (rate(svc_requests_total[1m])), 0.001) > 0.1
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '{{ $labels.svc }} 错误率{{ $value | printf "%.0f" }}超过阈值10%'
+
+      - alert: SvcDown
+        expr: svc_up == 0
+        for: 10s
+        labels: {severity: "1"}
+        annotations:
+          summary: '{{ $labels.svc }} 服务不可用'
+
+  - name: host-alarms
+    rules:
+      - alert: HostCPUHigh
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 90
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '主机 {{ $labels.instance }} CPU使用率{{ $value | printf "%.1f" }}%超过阈值90%'
+
+      - alert: HostMemoryHigh
+        expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 90
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '主机 {{ $labels.instance }} 内存使用率{{ $value | printf "%.1f" }}%超过阈值90%'
+
+      - alert: HostDiskBusy
+        expr: rate(node_disk_io_time_seconds_total[1m]) * 100 > 90
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '主机 {{ $labels.instance }} 磁盘{{ $labels.device }}繁忙率{{ $value | printf "%.1f" }}%超过阈值90%'
+
+      - alert: HostNetBandwidthUtil
+        expr: rate(node_network_receive_bytes_total{device!~"lo|veth.*|docker.*|br-.*|eth1"}[1m]) * 8 / 1000000000 * 100 > 90
+        for: 10s
+        labels: {severity: "2"}
+        annotations:
+          summary: '主机 {{ $labels.instance }} 网卡{{ $labels.device }}带宽利用率{{ $value | printf "%.2f" }}%超过阈值90%'
+
+      - alert: HostTCPCloseWaitHigh
+        expr: node_tcp_connection_states{state="close_wait"} > 200
+        for: 10s
+        labels: {severity: "3"}
+        annotations:
+          summary: '主机 {{ $labels.instance }} TCP-CLOSE-WAIT连接数{{ $value | printf "%.0f" }}超过阈值200'

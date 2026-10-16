@@ -2,12 +2,28 @@
 
 完整操作路径见：`G:\repo\ai+\working_logs\d6\D6-L2L3-无运维同学操作路径.md`
 
+## 关于域名：不需要
+
+这套栈**不依赖域名、不需要备案**：所有端口只监听 `127.0.0.1`，外部完全访问不到，
+因此既不涉及 ICP 备案，也不用开安全组。想从本地电脑看 Prometheus 界面，用 SSH 隧道：
+
+```bash
+ssh -L 9090:127.0.0.1:9090 -L 9093:127.0.0.1:9093 root@43.142.131.159
+# 然后本地浏览器打开 http://127.0.0.1:9090
+```
+
+## 上服务器第一件事：跑自检
+
+```bash
+bash preflight.sh      # 检查 docker / 资源 / 端口 / 外网 / 镜像拉取，5 分钟出结论
+```
+
 ## 最快上手（3 条命令）
 
 ```bash
-scp -r <本地>/pilot root@<服务器IP>:/root/pilot   # 本地执行，上传
-cd /root/pilot && chmod +x run_pilot.sh && ./run_pilot.sh   # 服务器执行，约 8 分钟
-scp root@<服务器IP>:/root/pilot/data/{alerts.jsonl,injections.json} <本地>/alarmflood/data/pilot/
+scp -r G:/aic_repo/alarmflood/pilot root@43.142.131.159:/root/pilot   # 本地执行，上传
+cd /root/pilot && bash preflight.sh && chmod +x run_pilot.sh && ./run_pilot.sh   # 服务器执行，约 8 分钟
+scp root@43.142.131.159:/root/pilot/data/{alerts.jsonl,injections.json} G:/aic_repo/alarmflood/data/pilot/
 ```
 
 ## 目录
@@ -24,9 +40,11 @@ scp root@<服务器IP>:/root/pilot/data/{alerts.jsonl,injections.json} <本地>/
 
 ## 手动验证入口
 
-- Prometheus UI：`http://<IP>:9090`（/targets 看抓取状态、/alerts 看规则触发）
-- Alertmanager：`http://<IP>:9093`
-- 手动注入：`curl "http://127.0.0.1:18001/debug/stress/cpu?threads=4&seconds=180"`
+- Prometheus UI：`ssh -L 9090:127.0.0.1:9090 root@<IP>` 后本地开 `http://127.0.0.1:9090`
+  （/targets 看抓取状态、/alerts 看规则触发）；不想开隧道就在服务器上
+  `curl -s localhost:9090/api/v1/alerts | head -c 800`
+- Alertmanager：同样走隧道 `http://127.0.0.1:9093`
+- 手动注入（服务器内执行）：`curl "http://127.0.0.1:18001/debug/stress/cpu?threads=4&seconds=180"`
 - 实时看告警：`tail -f data/alerts.jsonl`
 
 ## 清理

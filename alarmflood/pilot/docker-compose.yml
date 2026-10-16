@@ -17,8 +17,10 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=7d
+    # 只监听 127.0.0.1：不对外暴露 → 不需要备案、不需要开安全组、也没有暴露监控界面的风险
+    # 想从本地电脑看界面，用 SSH 隧道（见 README）：ssh -L 9090:127.0.0.1:9090 root@<IP>
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
 
   alertmanager:
     image: prom/alertmanager:v0.27.0
@@ -28,7 +30,7 @@ services:
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
     ports:
-      - "9093:9093"
+      - "127.0.0.1:9093:9093"
 
   node-exporter:
     image: prom/node-exporter:v1.8.1
@@ -37,7 +39,7 @@ services:
       - /:/host:ro,rslave
     command: ["--path.rootfs=/host"]
     ports:
-      - "9100:9100"
+      - "127.0.0.1:9100:9100"
 
   # 告警接收端：把 Alertmanager 的 webhook 落盘成 JSONL（后续 loader 的输入）
   sink:
@@ -46,7 +48,7 @@ services:
     volumes:
       - ./data:/data
     ports:
-      - "9099:9099"
+      - "127.0.0.1:9099:9099"
 
   svc-db:
     build: ./app
@@ -56,7 +58,7 @@ services:
       ROLE: db
       PEER: ""
     ports:
-      - "18001:8000"
+      - "127.0.0.1:18001:8000"
 
   svc-api-1:
     build: ./app
@@ -66,7 +68,7 @@ services:
       ROLE: api
       PEER: "http://svc-db:8000"
     ports:
-      - "18011:8000"
+      - "127.0.0.1:18011:8000"
 
   svc-api-2:
     build: ./app
@@ -76,7 +78,7 @@ services:
       ROLE: api
       PEER: "http://svc-db:8000"
     ports:
-      - "18012:8000"
+      - "127.0.0.1:18012:8000"
 
   svc-api-3:
     build: ./app
@@ -86,7 +88,7 @@ services:
       ROLE: api
       PEER: "http://svc-db:8000"
     ports:
-      - "18013:8000"
+      - "127.0.0.1:18013:8000"
 
 volumes:
   prom-data:

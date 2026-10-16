@@ -1,0 +1,7 @@
+{
+  "root_entity": "svc-db",
+  "anomaly_type": "CPU",
+  "st_ms": 1792144408000,
+  "ed_ms": 1792144663000,
+  "note": "svc-db 进程 CPU 饱和注入（4 线程 × 180s），真值根因 = svc-db"
+}

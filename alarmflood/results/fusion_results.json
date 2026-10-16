@@ -1,0 +1,43 @@
+{
+ "method": "fusion",
+ "n_eval": 72,
+ "top1": 35,
+ "top3": 47,
+ "note": "融合：α·rule+(1−α)·LLM，α=0.0（5 折 CV 选）",
+ "alpha_full": 0.0,
+ "cv": {
+  "top1": 33,
+  "top3": 45,
+  "n_eval": 72,
+  "chosen_alphas": [
+   0.0,
+   0.5,
+   1.0,
+   0.0,
+   0.0
+  ]
+ },
+ "baseline": {
+  "rule": {
+   "top1": 34,
+   "top3": 45
+  },
+  "llm": {
+   "top1": 35,
+   "top3": 47
+  }
+ },
+ "no_llm_windows": 0,
+ "llm_dedup": {
+  "n": 72,
+  "n_dup_win": 26,
+  "raw": [
+   35,
+   45
+  ],
+  "dedup": [
+   35,
+   46
+  ]
+ }
+}

@@ -1,0 +1,7 @@
+{
+  "method": "llm",
+  "n_eval": 72,
+  "top1": 35,
+  "top3": 47,
+  "note": "LLM 路线（glm-4-plus）：tier 线索 + 窗口概况；口径=窗内全部实体（与 rule 一致）"
+}

@@ -282,8 +282,14 @@ def llm_predict(items: list, client, model: str, mode: str):
 
 
 def evaluate(mode: str, dry_run: bool, max_windows: int | None,
-             client=None, model: str | None = None):
-    """按 m3_rank.py 的协议评测一条路线，返回指标与样例。"""
+             client=None, model: str | None = None, protocol: str = "full"):
+    """按 m3_rank.py 的协议评测一条路线，返回指标与样例。
+
+    protocol：
+      - "full"  （默认）对「窗内全部实体」排名 —— 与 m3_rank 口径一致，供对比表使用，
+                使 rule / llm / fusion 三行排的是同一个候选集、可直接比较；
+      - "native" 只对 LLM 点名的实体排名（旧口径，保留以便对照与披露）。
+    """
     alarms = pd.read_parquet(ALARMS)
     floods = pd.read_parquet(FLOOD)
     faults = pd.read_parquet(FAULTS)
@@ -317,6 +323,10 @@ def evaluate(mode: str, dry_run: bool, max_windows: int | None,
                 usage_total["completion_tokens"] += payload["usage"]["completion_tokens"] or 0
 
         n_eval += 1
+        if protocol == "full":
+            # LLM 点名的实体在前（按 LLM 给的顺序），窗内其余实体按告警条数降序补在后
+            rest = [e for e in wdf.entity.value_counts().index if e not in ranked]
+            ranked = list(ranked) + rest
         hit = w.service in ranked
         h1, h3 = w.service == ranked[0], w.service in ranked[:3]
         top1 += h1
@@ -334,7 +344,7 @@ def evaluate(mode: str, dry_run: bool, max_windows: int | None,
 
     return {"mode": mode, "n_eval": n_eval, "top1": top1, "top3": top3,
             "miss": misses, "examples": examples, "usage": usage_total,
-            "per_type": per_type, "fallback_n": fallback_n}
+            "per_type": per_type, "fallback_n": fallback_n, "protocol": protocol}
 
 
 def fmt_rate(num: int, den: int) -> str:
@@ -488,6 +498,23 @@ def main():
                            f"这部分成绩不属于 LLM 路线，对比时应扣除或单独说明。"]
     OUT_EXP.write_text("\n".join(blocks), encoding="utf-8")
     print(f"[m3-llm] written -> {OUT_EXP}")
+
+    # 落盘对比表行：llm → results/llm_results.json
+    # m3_rank.write_table() 会扫描 results/*_results.json 自动并进对比表，
+    # 因此这里是 experiments.md 里 llm 行的唯一数据来源（避免两边手工维护打架）
+    r_llm = next((x for x in results if x["mode"] == "llm"), None)
+    if r_llm:
+        out = {
+            "method": "llm",
+            "n_eval": r_llm["n_eval"],
+            "top1": r_llm["top1"],
+            "top3": r_llm["top3"],
+            "note": (f"LLM 路线（{model}）：tier 线索 + 窗口概况；"
+                     f"口径=窗内全部实体（与 rule 一致）"),
+        }
+        p = ROOT / "results" / "llm_results.json"
+        p.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"[m3-llm] written -> {p}")
 
 
 if __name__ == "__main__":

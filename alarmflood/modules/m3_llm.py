@@ -11,6 +11,14 @@ M3 根因排序 · LLM 路线 B（D3）+ 截断喂基线
   1. 把 tier（新发/半常驻/常驻）作为显式线索喂给 LLM，并给出层级语义
   2. 输出 JSON 增加 entity 字段，便于实体级评测（entity 仍必须来自输入集合，防幻觉）
 
+健壮性补丁（fix/llm-robustness，2026-10-16）：
+  1. 调用失败**自动重试 + 指数退避**（原先单次失败即放弃，一次网络抖动就白花 token）
+  2. mode=llm 增加**证据条数上限**（按 tier 强度优先截断），避免 prompt 无界增长
+  3. 可选**强制 JSON 输出**（response_format=json_object），网关不支持时自动降级重试
+  4. **回退披露**：LLM 候选全部被过滤（疑似幻觉）时原会静默回退到规则桩预测，
+     等于把规则路线的成绩算进 LLM 路线。现改为累计 `fallback_n` 并显式披露。
+  可用环境变量：LLM_MAX_EVIDENCE / LLM_MAX_RETRY / LLM_RETRY_SLEEP / LLM_JSON_MODE
+
 用法：
   python modules/m3_llm.py --dry-run                      # 不调 API，用桩预测验证整条流水线
   python modules/m3_llm.py                                # 真实调用（需要 OPENAI_API_KEY）
@@ -21,6 +29,7 @@ import hashlib
 import json
 import os
 import re
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -39,6 +48,16 @@ TIER_LABEL = {"core": "常驻", "semi": "半常驻", "novel": "新发"}
 
 # 截断喂基线：只喂最早出现的 N 条证据（D3 指南第5步，具体截断口径见文件末尾 TODO）
 TRUNCATE_N = int(os.environ.get("TRUNCATE_N", "5"))
+
+# ── 健壮性参数（fix/llm-robustness 引入）────────────────────────────────────
+# 1) 证据条数上限：mode=llm 原先不设上限，窗口大时 prompt 无界增长、token 失控。
+#    超出时按「tier 强度优先 → 首现更早」保留（与 D2 的判别逻辑一致）。
+MAX_EVIDENCE = int(os.environ.get("LLM_MAX_EVIDENCE", "60"))
+# 2) 失败重试 + 指数退避：原实现单次调用失败即放弃，一次网络抖动就白花 token。
+MAX_RETRY = int(os.environ.get("LLM_MAX_RETRY", "3"))
+RETRY_BASE_SLEEP = float(os.environ.get("LLM_RETRY_SLEEP", "2"))
+# 3) 强制 JSON 输出；网关不支持 response_format 时自动关掉并重试。
+JSON_MODE = os.environ.get("LLM_JSON_MODE", "1") not in ("0", "false", "False")
 
 SYSTEM = "你是一名企业 IT 系统的资深运维专家（SRE），擅长告警根因分析。"
 
@@ -73,7 +92,14 @@ def build_evidence(wdf: pd.DataFrame, mode: str) -> list:
     g = g.sort_values("first_seen_ms").reset_index(drop=True)
     items = g.to_dict("records")
     if mode == "truncated":
+        # 截断喂基线：只保留最早 N 条
         items = items[:TRUNCATE_N]
+    elif len(items) > MAX_EVIDENCE:
+        # mode=llm：按 tier 强度优先、其次首现更早，取前 MAX_EVIDENCE 条，
+        # 再按时间排回，保持因果链的阅读顺序
+        keep = sorted(items, key=lambda it: (-TIER_RANK.get(it["tier"], -1),
+                                             it["first_seen_ms"]))[:MAX_EVIDENCE]
+        items = sorted(keep, key=lambda it: it["first_seen_ms"])
     return items
 
 
@@ -130,15 +156,24 @@ def stub_predict(items: list) -> list:
     return list(g.index)
 
 
-def candidates_to_entities(data: dict, items: list) -> list:
-    """把 LLM 候选映射为实体顺序；过滤幻觉实体，全非法则降级到桩预测。"""
+def candidates_to_entities(data: dict, items: list):
+    """把 LLM 候选映射为实体顺序；过滤幻觉实体。
+
+    返回 (order, used_fallback)。**所有候选都是幻觉时会降级到规则桩预测**，
+    此时 used_fallback=True —— 调用方必须累计并在结果中披露这一数量。
+
+    ⚠️ 为什么必须披露：回退用的是 stub_predict（即规则路线），若静默计入，
+    等于**把规则路线的成绩算进 LLM 路线**，会虚高 LLM 表现且无从察觉。
+    """
     valid = {it["entity"] for it in items}
     order = []
     for c in data.get("candidates", []):
         e = c.get("entity")
         if e in valid and e not in order:
             order.append(e)
-    return order or stub_predict(items)
+    if order:
+        return order, False
+    return stub_predict(items), True
 
 
 def load_dotenv(path: Path):
@@ -180,32 +215,70 @@ def write_examples(examples: list, path: Path):
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _call_once(client, model: str, messages: list, use_json_mode: bool):
+    kwargs = dict(model=model, messages=messages, temperature=0)
+    if use_json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
+    return client.chat.completions.create(**kwargs)
+
+
 def llm_predict(items: list, client, model: str, mode: str):
-    """调用 LLM（带本地缓存），返回 (实体顺序, 原始 payload, 是否命中缓存)。"""
+    """调用 LLM（带本地缓存 + 重试）。
+
+    返回 (实体顺序, 原始 payload, 是否命中缓存, 是否用了回退预测)。
+    """
     user_msg = build_user_message(items)
     key = hashlib.sha1((mode + "\n" + user_msg).encode("utf-8")).hexdigest()
     cache_path = CACHE_DIR / f"{key}.json"
     if cache_path.exists():
         payload = json.loads(cache_path.read_text(encoding="utf-8"))
-        return candidates_to_entities(payload["parsed"], items), payload, True
+        order, fb = candidates_to_entities(payload.get("parsed") or {}, items)
+        return order, payload, True, fb
 
     messages = [
         {"role": "system", "content": SYSTEM},
         {"role": "user", "content": user_msg},
     ]
-    resp = client.chat.completions.create(model=model, messages=messages, temperature=0)
-    content = resp.choices[0].message.content
-    usage = {
-        "prompt_tokens": getattr(resp.usage, "prompt_tokens", None),
-        "completion_tokens": getattr(resp.usage, "completion_tokens", None),
-    }
-    parsed = extract_json(content)
+
+    # 重试 + 指数退避（原实现单次失败即放弃，一次网络抖动就白花 token）
+    resp, err, use_json = None, None, JSON_MODE
+    for attempt in range(1, MAX_RETRY + 2):
+        try:
+            resp = _call_once(client, model, messages, use_json)
+            break
+        except Exception as e:                       # noqa: BLE001
+            err = e
+            # 网关不认识 response_format → 关掉它继续重试，而不是直接失败
+            if use_json and "response_format" in str(e):
+                use_json = False
+                continue
+            if attempt <= MAX_RETRY:
+                time.sleep(min(RETRY_BASE_SLEEP * 2 ** (attempt - 1), 16))
+
+    if resp is None:
+        content = f"[ERROR] 调用失败（已重试 {MAX_RETRY} 次）：{type(err).__name__}: {err}"
+        usage = {"prompt_tokens": None, "completion_tokens": None}
+        parsed = {"candidates": []}
+    else:
+        content = resp.choices[0].message.content or ""
+        usage = {
+            "prompt_tokens": getattr(resp.usage, "prompt_tokens", None),
+            "completion_tokens": getattr(resp.usage, "completion_tokens", None),
+        }
+        try:
+            parsed = extract_json(content)
+        except Exception as e:                       # noqa: BLE001
+            # 解析失败不再中断整轮评测，而是记为空候选（会被计入回退并披露）
+            parsed = {"candidates": [],
+                      "_parse_error": f"{type(e).__name__}: {e}"}
+
     payload = {"mode": mode, "evidence": items, "raw": content,
-               "parsed": parsed, "usage": usage}
+               "parsed": parsed, "usage": usage, "json_mode": use_json}
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2),
                           encoding="utf-8")
-    return candidates_to_entities(parsed, items), payload, False
+    order, fb = candidates_to_entities(parsed, items)
+    return order, payload, False, fb
 
 
 def evaluate(mode: str, dry_run: bool, max_windows: int | None,
@@ -217,6 +290,7 @@ def evaluate(mode: str, dry_run: bool, max_windows: int | None,
     train = faults[faults.data_type == "train"]
 
     top1 = top3 = n_eval = 0
+    fallback_n = 0          # 因候选全被过滤（疑似幻觉）而回退到规则桩预测的窗口数
     misses, examples, usage_total = [], [], {"prompt_tokens": 0, "completion_tokens": 0}
     per_type = {}
     for _, w in train.iterrows():
@@ -233,9 +307,11 @@ def evaluate(mode: str, dry_run: bool, max_windows: int | None,
 
         items = build_evidence(wdf, mode)
         if dry_run:
-            ranked, payload, cached = stub_predict(items), None, False
+            ranked, payload, cached, used_fallback = stub_predict(items), None, False, False
         else:
-            ranked, payload, cached = llm_predict(items, client, model, mode)
+            ranked, payload, cached, used_fallback = llm_predict(items, client, model, mode)
+            if used_fallback:
+                fallback_n += 1
             if not cached and payload:
                 usage_total["prompt_tokens"] += payload["usage"]["prompt_tokens"] or 0
                 usage_total["completion_tokens"] += payload["usage"]["completion_tokens"] or 0
@@ -258,7 +334,7 @@ def evaluate(mode: str, dry_run: bool, max_windows: int | None,
 
     return {"mode": mode, "n_eval": n_eval, "top1": top1, "top3": top3,
             "miss": misses, "examples": examples, "usage": usage_total,
-            "per_type": per_type}
+            "per_type": per_type, "fallback_n": fallback_n}
 
 
 def fmt_rate(num: int, den: int) -> str:
@@ -355,6 +431,10 @@ def main():
         if not args.dry_run:
             print(f"[m3-llm] token usage: prompt={r['usage']['prompt_tokens']:,} "
                   f"completion={r['usage']['completion_tokens']:,}")
+            if r["fallback_n"]:
+                print(f"[m3-llm] ⚠️ {r['fallback_n']}/{r['n_eval']} 个窗口的 LLM 候选"
+                      f"全部被过滤（疑似幻觉），已回退到规则桩预测 —— "
+                      f"这部分成绩不属于 LLM 路线，报告时必须披露")
         if r["miss"]:
             print(f"[m3-llm] {r['mode']} miss samples (fault_id, root, type, top3):")
             for m in r["miss"]:
@@ -376,6 +456,15 @@ def main():
         print(f"[m3-llm] written -> {ROOT / 'results' / 'llm_examples.md'}")
 
     # 落盘：对比表行（不覆盖 A 的 experiments.md，由人工合并到主表）
+    #
+    # ⚠️ 干跑 / 部分窗口运行时**不写盘**：否则桩预测或部分结果会覆盖已提交的正式
+    #    实验结果（实测 `--dry-run --max-windows 5` 会把 llm_experiments.md 从
+    #    26 行冲成 11 行）。正式结果只能由完整跑产生。
+    if args.dry_run or args.max_windows is not None:
+        print("[m3-llm] --dry-run / --max-windows 模式下不写 llm_experiments.md"
+              "（避免桩结果或部分结果覆盖正式实验结果）")
+        return
+
     OUT_EXP.parent.mkdir(parents=True, exist_ok=True)
     note = {"llm": "LLM 路线（tier 线索）",
             "truncated": f"截断喂基线（只喂最早 {TRUNCATE_N} 条）"}
@@ -393,6 +482,10 @@ def main():
         if r["usage"]["prompt_tokens"]:
             blocks += ["", f"> {r['mode']} 本轮新增调用 token：prompt={r['usage']['prompt_tokens']:,}，"
                            f"completion={r['usage']['completion_tokens']:,}"]
+        if r["fallback_n"]:
+            blocks += ["", f"> ⚠️ **{r['mode']} 有 {r['fallback_n']}/{r['n_eval']} 个窗口因 "
+                           f"LLM 候选全部被过滤（疑似幻觉）而回退到规则桩预测**——"
+                           f"这部分成绩不属于 LLM 路线，对比时应扣除或单独说明。"]
     OUT_EXP.write_text("\n".join(blocks), encoding="utf-8")
     print(f"[m3-llm] written -> {OUT_EXP}")
 

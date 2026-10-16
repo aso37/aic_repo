@@ -152,11 +152,22 @@ rank3: MG01
 3. **LLM 结果只有一份**：单一模型（glm-4-plus）、单次运行，未做多次采样取平均。
 4. **α 是全局单一值**：未按故障类型分别调 α（分类型调参会进一步放大过拟合风险）。
 
-## 9. 复现
+## 9. 复现与接入对比表
 
 ```bash
 python modules/m3_fusion.py --folds 5 --seed 42
 ```
 
-跑完可执行 `python modules/m3_rank.py`，对比表会自动多出 `fusion` 行
-（前提：`experiments.md` 里已放好 `<!-- AUTO-TABLE:BEGIN/END -->` 标记）。
+`m3_rank.load_extra_rows()` 会自动读取 `results/fusion_results.json` 并渲染成
+对比表的 fusion 行 —— 但需要 `experiments.md` 里先放好
+`<!-- AUTO-TABLE:BEGIN -->` / `<!-- AUTO-TABLE:END -->` 标记。
+
+⚠️ **不要直接把现有表格整段包进标记**：`load_extra_rows()` 只认
+`results/*_results.json`，而 llm 两行目前来自 `llm_experiments.md`，
+没有对应的 `llm_results.json` —— 包标记后重跑会**丢掉 llm 两行**。
+
+**在补齐 `llm_results.json` 之前，建议手工粘贴下面这行到对比表：**
+
+```markdown
+| fusion | 33/72 (46%) | 45/72 (62%) | 72 | 融合：α·rule+(1−α)·LLM；α 按 5 折 CV 选取（无偏）；全量最优 α=0.0（有偏，Top-1 35/72 (49%)） |
+```

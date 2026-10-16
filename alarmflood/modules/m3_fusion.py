@@ -412,16 +412,22 @@ def main():
     l1, l3, _, _, _, _ = eval_at(wins, llm, 0.0)     # 纯 LLM（已去重）
 
     # ---- 5. 写 fusion_results.json（供 m3_rank.load_extra_rows 渲染）----
+    # 主数字用**无偏的交叉验证**结果，与 note 口径保持一致；
+    # 全量调优的数字单独放在 full_tuned 里并标清"有偏"。
     OUT_JSON.write_text(json.dumps({
         "method": "fusion",
-        "n_eval": n,
-        "top1": t1,
-        "top3": t3,
-        "note": f"融合：α·rule+(1−α)·LLM，α={best_full_a}（5 折 CV 选）",
-        "alpha_full": best_full_a,
+        "n_eval": cvn,
+        "top1": cv1,
+        "top3": cv3,
+        "note": f"融合：α·rule+(1−α)·LLM；α 按 {args.folds} 折 CV 选取（无偏）",
+        "full_tuned": {"alpha": best_full_a, "top1": t1, "top3": t3, "n_eval": n,
+                       "caveat": "在同批窗口上选出，偏乐观，不作为结论"},
         "cv": {"top1": cv1, "top3": cv3, "n_eval": cvn, "chosen_alphas": chosen},
-        "baseline": {"rule": {"top1": r1, "top3": r3},
-                     "llm": {"top1": l1, "top3": l3}},
+        "baseline_same_protocol": {"rule": {"top1": r1, "top3": r3},
+                                   "llm_full_candidate": {"top1": l1, "top3": l3}},
+        "llm_native_protocol": {"top1": prot["native"][0], "top3": prot["native"][1],
+                                "n_eval": prot["native"][2],
+                                "note": "只排 LLM 点名的实体；对比表 llm 行用的是这个口径"},
         "no_llm_windows": no_llm,
         "llm_dedup": ded,
     }, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -613,14 +619,27 @@ def write_report(wins, llm, model, gen_at, gdf, best_a, best_key, cv, chosen,
     A("3. **LLM 结果只有一份**：单一模型（" + f"{model}" + "）、单次运行，未做多次采样取平均。")
     A("4. **α 是全局单一值**：未按故障类型分别调 α（分类型调参会进一步放大过拟合风险）。")
     A("")
-    A("## 9. 复现")
+    A("## 9. 复现与接入对比表")
     A("")
     A("```bash")
     A(f"python modules/m3_fusion.py --folds {args.folds} --seed {args.seed}")
     A("```")
     A("")
-    A("跑完可执行 `python modules/m3_rank.py`，对比表会自动多出 `fusion` 行")
-    A("（前提：`experiments.md` 里已放好 `<!-- AUTO-TABLE:BEGIN/END -->` 标记）。")
+    A("`m3_rank.load_extra_rows()` 会自动读取 `results/fusion_results.json` 并渲染成")
+    A("对比表的 fusion 行 —— 但需要 `experiments.md` 里先放好")
+    A("`<!-- AUTO-TABLE:BEGIN -->` / `<!-- AUTO-TABLE:END -->` 标记。")
+    A("")
+    A("⚠️ **不要直接把现有表格整段包进标记**：`load_extra_rows()` 只认")
+    A("`results/*_results.json`，而 llm 两行目前来自 `llm_experiments.md`，")
+    A("没有对应的 `llm_results.json` —— 包标记后重跑会**丢掉 llm 两行**。")
+    A("")
+    A("**在补齐 `llm_results.json` 之前，建议手工粘贴下面这行到对比表：**")
+    A("")
+    A("```markdown")
+    A(f"| fusion | {fmt(cv1, cvn)} | {fmt(cv3, cvn)} | {cvn} | "
+      f"融合：α·rule+(1−α)·LLM；α 按 {args.folds} 折 CV 选取（无偏）；"
+      f"全量最优 α={best_a}（有偏，Top-1 {fmt(best_key[0], n)}） |")
+    A("```")
     A("")
 
     OUT_MD.write_text("\n".join(L), encoding="utf-8")

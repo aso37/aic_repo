@@ -1,10 +1,16 @@
 {
  "method": "fusion",
  "n_eval": 72,
- "top1": 35,
- "top3": 47,
- "note": "融合：α·rule+(1−α)·LLM，α=0.0（5 折 CV 选）",
- "alpha_full": 0.0,
+ "top1": 33,
+ "top3": 45,
+ "note": "融合：α·rule+(1−α)·LLM；α 按 5 折 CV 选取（无偏）",
+ "full_tuned": {
+  "alpha": 0.0,
+  "top1": 35,
+  "top3": 47,
+  "n_eval": 72,
+  "caveat": "在同批窗口上选出，偏乐观，不作为结论"
+ },
  "cv": {
   "top1": 33,
   "top3": 45,
@@ -17,15 +23,21 @@
    0.0
   ]
  },
- "baseline": {
+ "baseline_same_protocol": {
   "rule": {
    "top1": 34,
    "top3": 45
   },
-  "llm": {
+  "llm_full_candidate": {
    "top1": 35,
    "top3": 47
   }
+ },
+ "llm_native_protocol": {
+  "top1": 35,
+  "top3": 46,
+  "n_eval": 72,
+  "note": "只排 LLM 点名的实体；对比表 llm 行用的是这个口径"
  },
  "no_llm_windows": 0,
  "llm_dedup": {

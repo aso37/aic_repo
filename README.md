@@ -65,6 +65,7 @@ aic_repo/
     ├── requirements.txt           依赖清单（唯一来源）
     ├── app.py                     M5 演示看板（Streamlit，两页签）
     ├── run_dashboard.bat          看板启动脚本（自动找 Python）
+    ├── ALGORITHM_SPEC.md          《核心算法说明》：界面功能 ↔ 算法模块映射（要求2）
     ├── config/
     │   └── teams.csv              实体 → 责任团队映射（工单分派用）
     ├── loaders/
@@ -77,7 +78,7 @@ aic_repo/
     │   ├── m3_llm.py              M3 路线B：LLM 根因排序
     │   ├── m3_fusion.py           M3 路线C：rule × LLM 加权融合
     │   └── m4_report.py           M4 处置单 + 工单 + 幻觉校验
-    ├── scripts/                   诊断与实验脚本（不参与主链路）
+    ├── scripts/                   诊断与实验脚本（含 check_replay.py 回放自检，不参与主链路）
     ├── data/                      告警流中间产物（parquet）
     └── results/                   全部实验结果（parquet / json / md）
 ```
@@ -163,10 +164,14 @@ $env:AIOPS2021_RAW = "D:\your\path\to\AIOps2021"
 
 | 文件 | 内容 |
 |---|---|
-| `experiments.md` | **主对比实验表**（freq / rule / llm / 截断喂 / fusion）+ D2/D3 分析 |
-| `llm_experiments.md` | LLM 路线（D3）实验记录 |
+| `experiments.md` | **主对比实验表** + D2/D3 文字分析。表体在 `<!-- AUTO-TABLE -->` 标记内，由 `modules/m3_rank.py` **统一渲染**（freq/rule 自算，llm 读 `llm_results.json`，fusion 读 `fusion_results.json`）→ **单一写入口，各方法互不覆盖** |
+| `llm_results.json` | LLM 路线结果（供对比表自动渲染） |
+| `llm_experiments.md` | LLM 路线（D3）实验记录，含截断喂消融 |
 | `llm_examples.md` | LLM 推理链样例（答辩素材） |
+| `fusion_results.json` | 融合路线结果（供对比表自动渲染） |
 | `fusion_experiments.md` | 融合路线（D6）完整报告：α 网格、交叉验证、互补性、局限 |
+| `REPLAY_MODE.md` | 「回放模式」设计说明（评审无需 API key 即可演示全流程） |
+| `replay_check.md` | 回放模式可重复性自检记录（`scripts/check_replay.py`） |
 | `rule_audit.md` | **告警规则自查记录**：3 条规则阈值从未生效的发现、量化收益与决策 |
 | `data_choices.md` | 数据与阈值选型记录 |
 | `reports/` | M4 处置单与工单（逐窗口 JSON）+ 抽检记录 |

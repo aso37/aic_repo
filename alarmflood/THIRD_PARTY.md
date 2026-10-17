@@ -43,7 +43,7 @@
 - **阈值经逐 KPI 实测校准**（2026-10-14，**基于全部 10 天数据**）：原方案对全部 KPI 统一使用阈值 90，
   最初的 10 条里只有 7 条触发。核实后确认 **KPI 名称全部正确**，问题在阈值。处置如下：
   - **删除** `SWPTotSwapUsedPercent`（10 天恒为 0，该系统未启用 Swap）
-  - **换指标** `ens160_NETBandwidthUtil` → **`NETWORK_TCP-FIN-WAIT`**（前者是 0~1 比例，10 天 max 仅 0.368）
+  - **换指标** `ens160_NETBandwidthUtil` → **`NETWORK_TCP-FIN-WAIT`**（前者 10 天全量 max 仅 **0.3685**，即 **0.37%**，信号近乎恒为 0）
   - **删除** `FSInodeUsedPercent`：试把阈值降到 20 使其生效 → 产生 6,276 条常驻告警、
     CPU 型 Top-1 由 96% 降至 79%、DISK 型毫无改善 → **否决**
   - **回退** `sdb_DSKPercentBusy`：曾因只看单日数据误判为"不可达"而改到 30 → 全量复核后**回退到 90**
@@ -57,7 +57,7 @@
   复核脚本 `scripts/probe_rule_coverage.py` 已改为默认扫描 10 天并打印逐日 max 对照
 - **网络型故障的关键指标**：`NETWORK_TCP-FIN-WAIT`（TCP 半关闭连接数）——
   非零样本占比仅 1.18%，但在 71% 的网络故障窗内出现非零，对其他故障类型 0% 命中
-  （原用的 `ens160_NETBandwidthUtil` 是 0~1 比例，10 天 max 仅 0.368，阈值 90 永不可达）
+  （原用的 `ens160_NETBandwidthUtil` 10 天全量 max 仅 **0.3685**，即 **0.37%**，阈值 90 永不可达）
 - **重复报警抑制**：同 (entity, alarm_id) 600 秒内只保留首条，**抑制率 84.8%**（103,367 → 15,746 条）
 - **时区注意**：groundtruth 的 `st_time`/`ed_time` 为数据时钟字符串（北京时间），
   epoch 一律以数据自带 `time` 列为锚点推算，**禁止用 `.timestamp()`**（naive datetime 会按本机时区转换）

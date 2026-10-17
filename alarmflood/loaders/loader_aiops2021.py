@@ -45,10 +45,16 @@ RULES = [
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sda_DSKPercentBusy", 90.0, "磁盘sda繁忙率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKPercentBusy", 90.0, "磁盘sdb繁忙率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdc_DSKPercentBusy", 90.0, "磁盘sdc繁忙率{v}%超过阈值90%", 2),
-    # ↓ 以下 3 条在本数据集上为「空转规则」：KPI 存在但取值从未越限（实测见 D3 核查）
-    #   NETBandwidthUtil 全期 max=0.03%  /  SWPTotSwapUsedPercent 全期 max=0.00%
-    #   FSInodeUsedPercent 亦未触发。保留原因：规则集取自 Zabbix 社区默认值，未针对本
-    #   数据集调参（这正是「规则先验定死」的证据）；换真实环境即会生效。
+    # ↓ 以下 3 条在本数据集上为「空转规则」：KPI 存在但取值从未越限
+    #   （10 天全量实测量见 results/rule_audit.md 第 3 节）
+    #     NETBandwidthUtil       全期 max=0.3685（即 0.37%，阈值 90）
+    #     SWPTotSwapUsedPercent  全期恒为 0.0000（系统未启用 Swap）
+    #     FSInodeUsedPercent     全期 max=29.9327（实际区间 16.4~29.9，阈值 90）
+    #   保留原因：规则集取自 Zabbix 社区默认值，未针对本数据集调参
+    #   （这正是「规则先验定死」的证据）；换真实环境即会生效。
+    #   ⚠️ 更正记录：早期注释曾写「NETBandwidthUtil 全期 max=0.03%」，
+    #      那是 **0304 单日** 的值（0.0316）；全期最大出现在 0310（0.3685）。
+    #      「只看一天」是本项目踩过的同一个坑，已按 10 天全量实测更正。
     ("OSLinux-OSLinux_FILESYSTEM_-_FSInodeUsedPercent", 90.0, "文件系统Inode使用率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_NETWORK_ens160_NETBandwidthUtil", 90.0, "网卡ens160带宽利用率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_SWAP_SWAP_SWPTotSwapUsedPercent", 90.0, "Swap使用率{v}%超过阈值90%", 3),

@@ -295,8 +295,11 @@ LLM 路线分类型：CPU 96%/100% · JVM 60%/70% · MEMORY **57%/71%** · DISK 
 
 NETWORK 型占 train 故障的 **42%（47/112）**，是最大类别，但 Top-1 为 **0/20**。
 
-**已查清原因**：告警规则中 3 条阈值从未生效 —— `SWP` 恒为 0（系统未启用 swap）、
-`NETBandwidthUtil` 是 0~1 比例（10 天 max 仅 0.368）、`FSInodeUsedPercent` 逐日 max 恒为 29.9。
+**已查清原因**：告警规则中 3 条阈值从未生效 ——
+`SWP` 10 天恒为 0（系统未启用 swap）、
+`NETBandwidthUtil` 全期 max 仅 **0.3685**（即 0.37%，阈值 90，属**信号近乎恒为 0**）、
+`FSInodeUsedPercent` 全期 max 29.93（阈值 90）。
+三条**病因各不相同**（信号缺失 / 信号缺失 / 阈值不当），详见 `results/rule_audit.md` 第 3 节。
 
 **已量化修正收益**：把失效的带宽指标换成 `NETWORK_TCP-FIN-WAIT` 后，网络型 Top-1 可从
 0/20 提升到 16/46（35%）。但该修正会改变告警流、使已完成的 D3/D4 结果失效，

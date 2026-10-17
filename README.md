@@ -200,7 +200,7 @@ $env:AIOPS2021_RAW = "D:\your\path\to\AIOps2021"
 
 ## 八、许可
 
-- **本仓库代码**：许可协议由团队最终决定（`LICENSE` 文件待补）。
+- **本仓库代码**：**归参赛团队所有**（仓库内未声明开源许可，即默认保留所有权利）。
 - **数据集**：AIOps Challenge 2021 Dataset © 2021 by Dan Pei，
   licensed under **CC BY-NC 4.0（署名 — 非商业性使用）**
   → 竞赛等非商业用途可用；**商业化需替换为自有数据**。

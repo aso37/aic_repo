@@ -46,7 +46,10 @@ OUT_COST = ROOT / "results" / "llm_cost.jsonl"
 TIER_RANK = {"core": 0, "semi": 1, "novel": 2}
 TIER_LABEL = {"core": "常驻", "semi": "半常驻", "novel": "新发"}
 
-# 截断喂基线：只喂最早出现的 N 条证据（D3 指南第5步，具体截断口径见文件末尾 TODO）
+# 截断喂基线：只喂最早出现的 N 条证据（D3 指南第5步）
+#   实际口径见 build_evidence()：mode=="truncated" 时 items = items[:TRUNCATE_N]，
+#   即「按首现时间排序后，保留最早的 N 组（实体×模板）」，N 默认 5（环境变量 TRUNCATE_N 可覆盖）。
+#   （旧注释写"见文件末尾 TODO"，但那个 TODO 并不存在，已更正为指向实际实现处。）
 TRUNCATE_N = int(os.environ.get("TRUNCATE_N", "5"))
 
 # ── 健壮性参数（fix/llm-robustness 引入）────────────────────────────────────

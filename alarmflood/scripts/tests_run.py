@@ -80,9 +80,11 @@ e = list(at.exception)
 n_metric = len(at.metric)
 titles = [t.value for t in at.title]
 succ = [s.value for s in at.success]
-has_novel_msg = any("新发告警实体" in s for s in succ)
+# 语义断言（不绑定精确文案）：界面改文案不应误报。
+# 旧文案「新发告警实体（判别性最强）：…」/ 新文案「本窗口发出**新发告警**的实体：…」
+has_novel_msg = any("新发告警" in s for s in succ)
 rec("TC-1.1", "页签一 正常流（窗口 #137）",
-    "无异常；4 个窗口指标 metric；出现「新发告警实体」提示",
+    "无异常；≥4 个窗口指标 metric；出现提及「新发告警」的提示",
     f"异常={len(e)}；metric={n_metric}；success={succ[:1]}",
     (not e) and n_metric >= 4 and has_novel_msg)
 
@@ -161,10 +163,13 @@ try:
     at5.sidebar.selectbox[0].select(o234).run()
     e5 = list(at5.exception)
     w5 = [w.value for w in at5.warning]
-    degraded = any("暂无处置单" in w for w in w5)
+    # 语义断言：只需要「提到处置单缺失」+「不崩」，不绑定精确文案。
+    # 旧文案「本窗口暂无处置单（M4 结果未落盘）…」/
+    # 新文案「本窗口既无处置单也无大模型排序结果…」
+    degraded = any(("处置单" in w) and ("无" in w) for w in w5)
     rec("TC-2.2", "页签二 边界：无处置单（窗口 #234）→ 优雅降级",
-        "无异常；出现「暂无处置单」降级提示，不崩溃",
-        f"异常={len(e5)}；warning={[x[:40] for x in w5[:1]]}",
+        "无异常；出现说明「无处置单」的降级提示，不崩溃",
+        f"异常={len(e5)}；warning={[x[:46] for x in w5[:1]]}",
         (not e5) and degraded)
 except Exception as ex:  # noqa: BLE001
     rec("TC-2.2", "页签二 边界：无处置单（窗口 #234）", "无异常+降级提示",

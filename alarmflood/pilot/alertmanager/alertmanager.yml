@@ -1,0 +1,17 @@
+# repeat_interval=30s 是刻意设置：模拟真实企业里"告警未恢复就周期性重复通知"，
+# 这正是工业报警治理里的"重复报警（repeated alarm）"，也是我们要治理的对象之一。
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: webhook
+  group_by: [alertname, svc]
+  group_wait: 0s
+  group_interval: 10s
+  repeat_interval: 30s
+
+receivers:
+  - name: webhook
+    webhook_configs:
+      - url: http://sink:9099/webhook
+        send_resolved: true

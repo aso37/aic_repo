@@ -42,10 +42,14 @@ RULES = [
     ("OSLinux-CPU_CPU_CPUUserTime", 55.0, "用户态CPU时间{v}%异常升高", 3),
     ("OSLinux-OSLinux_MEMORY_MEMORY_MEMUsedMemPerc", 90.0, "内存使用率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_MEMORY_MEMORY_NoCacheMemPerc", 90.0, "无缓存内存使用率{v}%超过阈值90%", 3),
-    ("OSLinux-OSLinux_FILESYSTEM_-_FSInodeUsedPercent", 90.0, "文件系统Inode使用率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sda_DSKPercentBusy", 90.0, "磁盘sda繁忙率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdb_DSKPercentBusy", 90.0, "磁盘sdb繁忙率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_LOCALDISK_LOCALDISK-sdc_DSKPercentBusy", 90.0, "磁盘sdc繁忙率{v}%超过阈值90%", 2),
+    # ↓ 以下 3 条在本数据集上为「空转规则」：KPI 存在但取值从未越限（实测见 D3 核查）
+    #   NETBandwidthUtil 全期 max=0.03%  /  SWPTotSwapUsedPercent 全期 max=0.00%
+    #   FSInodeUsedPercent 亦未触发。保留原因：规则集取自 Zabbix 社区默认值，未针对本
+    #   数据集调参（这正是「规则先验定死」的证据）；换真实环境即会生效。
+    ("OSLinux-OSLinux_FILESYSTEM_-_FSInodeUsedPercent", 90.0, "文件系统Inode使用率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_NETWORK_ens160_NETBandwidthUtil", 90.0, "网卡ens160带宽利用率{v}%超过阈值90%", 2),
     ("OSLinux-OSLinux_SWAP_SWAP_SWPTotSwapUsedPercent", 90.0, "Swap使用率{v}%超过阈值90%", 3),
 ]

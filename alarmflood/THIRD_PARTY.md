@@ -2,23 +2,81 @@
 
 > 比赛规则：引用他人技术、算法或数据需在参赛材料中明确标注。本文件从第一天维护，最后导出为附录表格。
 
-## 一、数据集与依赖
+## 一、第三方依赖清单（逐条核实，2026-10-17）
 
-| 名称 | 版本 | 用途 | 许可 | 获取 |
+> **核实方法（可复现）**：许可信息取自**已安装包的分发元数据**
+> （`importlib.metadata` 的 `License` / `License-Expression` / `Classifier` 字段）；
+> 本机未安装的包取自 **PyPI 官方 JSON API**（`https://pypi.org/pypi/<包>/<版本>/json`）。
+> **不是凭记忆抄的**——每条都标了核实来源。
+
+### 1.1 主链路运行时依赖（`alarmflood/requirements.txt`）
+
+| 包 | requirements 锁定 | 本机实测 | 用途 / 用在哪 | 许可（核实来源） | 上游 |
+|---|---|---|---|---|---|
+| pandas | 2.3.3 | 3.0.6 | 表格与时序处理；全链路 | **BSD-3-Clause**（元数据 `License` 字段） | https://pandas.pydata.org |
+| numpy | 2.2.6 | 2.5.4 | 数值计算；`m3_fusion.py` | **BSD-3-Clause**（`License-Expression: BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0`） | https://numpy.org |
+| pyarrow | 25.0.1 | 25.0.1 | parquet 读写引擎（pandas 的底层后端，**间接必需**） | **Apache-2.0**（`License-Expression`） | https://arrow.apache.org |
+| drain3 | 0.9.11 | 0.9.11 | 日志模板挖掘（M1 告警归并） | **MIT**（Classifier: MIT License） | https://github.com/IBM/Drain3 |
+| matplotlib | 3.10.9 | 3.11.2 | 看板图表（瀑布图/时间轴） | **PSF-based**（Classifier: Python Software Foundation License） | https://matplotlib.org |
+| streamlit | 1.65.0 | 1.65.0 | 演示看板（M5） | **Apache-2.0**（`License-Expression`） | https://streamlit.io |
+| openai | 3.29.0 | 3.29.0 | LLM API 客户端（M3 路线 B / M4） | **Apache-2.0**（`License-Expression`） | https://github.com/openai/openai-python |
+
+> **为什么有两列版本**：`requirements.txt` 是发给别人的**锁定版本**（以团队 conda 环境实测为基）；
+> 本机开发环境因后续装包，pandas / numpy / matplotlib 的次版本比锁定值新。
+> **两者都实测可运行**——`TEST_REPORT.md` 的 14 条用例全部在本机
+> `3.0.6 / 2.5.4 / 3.11.2` 这套版本上通过。
+
+### 1.2 自建试点栈依赖（`alarmflood/pilot/app/requirements.txt`，仅 L2 试点）
+
+| 包 | 版本 | 用途 | 许可（核实来源） | 上游 |
 |---|---|---|---|---|
-| AIOps 挑战赛数据（2021 银行场景，aiops2021-2） | 2021 | 主评测数据：metric/logs/trace + 根因标注（159 窗口） | **CC BY-NC 4.0（署名-非商业性使用）** | 天池 / GitHub AIOps2021 |
-| Loghub (HDFS) | — | D6 消融实验（迁移验证） | 开源（具体协议待核） | github.com/logpai |
-| pandas | **3.0.6** | 表格处理 | BSD-3-Clause | pip |
-| pyarrow | 25.0.1 | parquet 读写 | Apache-2.0 | pip |
-| drain3 | 0.9.11 | 告警模板归并（M1） | MIT | pip |
-| scikit-learn | 1.9.1 | 相似度 / 统计工具 | BSD-3-Clause | pip |
-| Streamlit | 1.65.0 | 演示看板（M5） | Apache-2.0 | pip |
-| matplotlib | 3.11.2 | 图表 | PSF-based | pip |
-| python-dotenv | 1.2.4 | 环境变量 | BSD-3-Clause | pip |
-| openai (SDK) | 3.29.0 | LLM 调用（M3 路线 B / M4） | Apache-2.0 | pip |
-| （D3 填）LLM 服务 | | 根因推理 / 处置单 / 工单 | 商用条款 | |
+| flask | 3.0.3 | 试点故障注入服务的 HTTP 接口 | **BSD-3-Clause**（PyPI Classifier: BSD License） | https://github.com/pallets/flask |
+| psutil | 5.9.8 | 采集进程 CPU/内存以制造真实故障 | **BSD-3-Clause**（PyPI `license` 字段明写 `BSD-3-Clause`） | https://github.com/giampaolo/psutil |
+| prometheus_client | 0.20.0 | 暴露 `/metrics` 供 Prometheus 抓取 | **Apache-2.0**（PyPI `license` 字段） | https://github.com/prometheus/client_python |
+| requests | 2.32.3 | 调用链内 HTTP 调用 | **Apache-2.0**（PyPI `license` 字段） | https://github.com/psf/requests |
 
-> 完整版本锁定见仓库根 `requirements.txt`。
+> 这 4 个包**只装在 Docker 试点的 mock 服务容器里**，不进入主看板与算法链路的运行时。
+
+### 1.3 已从清单移除（早期列入，但代码实际未使用）
+
+| 包 | 早期是否列入 | 核实结论 |
+|---|---|---|
+| **scikit-learn** | 曾列 `1.9.1` | **全仓库无任何 `import sklearn`**。`requirements.txt` 注释也写明了"未 import，故不纳入"（D6 融合用简单网格搜索）。→ **移除** |
+| **python-dotenv** | 曾列 `1.2.4` | **全仓库无任何 `import dotenv`**。`m3_llm.py` 自己实现了 10 行极简 `load_dotenv()`，注释明确写"避免额外依赖 python-dotenv"。→ **移除** |
+| **Loghub (HDFS)** | 曾列为 D6 消融数据，许可写"待核" | **该消融已取消**（改由自建 Prometheus 试点栈提供"不挑数据源"的证据，见第二节）。→ **移除**（不再有许可待核项） |
+
+> 这三条是本轮核对的主要产出：**清单里曾包含 2 个从未被 import 的包和 1 个已取消的数据源**，
+> 会让评审误判技术栈，也与 `requirements.txt` 自相矛盾。
+
+### 1.4 ⚠️ 安全问题：试点容器有 2 个已知漏洞（建议升级）
+
+核许可时顺带查了 PyPI 的漏洞公告，发现试点容器 pin 的两个版本存在已知 CVE：
+
+| 包 | 当前 pin | 漏洞 | 触发条件 | 修复版本 | 建议 |
+|---|---|---|---|---|---|
+| flask | 3.0.3 | **CVE-2026-27205** | 部署在会缓存的代理之后 **且** 访问了 `session`，可能泄漏会话信息 | **3.1.3** | 升到 `flask>=3.1.3` |
+| requests | 2.32.3 | **CVE-2024-47081** | 使用 `.netrc` **且** 访问特制恶意 URL，可能泄漏凭据 | **2.32.4** | 升到 `requests>=2.32.4` |
+
+**影响评估（如实说明）**：
+
+- 这两个包**只在 L2 试点的 mock 服务容器里**。该服务**不是对外产品**，
+  只是为演示"真实监控栈会产生告警"而临时起的故障注入服务。
+- **flask**：漏洞需要"缓存代理 + 使用 session"。我们的 mock 服务**既没有 session、也不在缓存代理后**，
+  **实际不可利用**。
+- **requests**：漏洞需要"使用 .netrc + 特制 URL"。mock 服务只调内部地址、**不读 .netrc**，
+  **实际不可利用**。
+- **主链路完全不受影响**：本机 `requests` 实际为 **2.34.2**（≥ 2.32.4，已不在影响范围），
+  且 **flask 根本不在主链路依赖里**。
+- **但仍建议升级**——"已知漏洞未修"在合规评审里是扣分项，而升级成本只是改两个版本号。
+
+### 1.5 数据与外部服务（非 pip 依赖）
+
+| 名称 | 版本 | 用途 | 许可 | 来源 |
+|---|---|---|---|---|
+| AIOps Challenge 2021 Dataset（银行场景，`aiops2021-2`） | 2021 | 主评测数据：metric / logs / trace + **159 个故障标注** | **CC BY-NC 4.0（署名—非商业性使用）** | 数据集自带 `README.md`，原文见第二节 |
+| 智谱 BigModel **`glm-4-plus`**（经 OpenAI 兼容接口调用） | `glm-4-plus` | 根因推理（M3 路线 B）、处置单生成（M4） | **厂商服务条款**；本作品**仅通过公开 API 调用，未分发、未嵌入模型权重** | https://open.bigmodel.cn |
+
+> 完整版本锁定见 **`alarmflood/requirements.txt`**（仓库内唯一清单；仓库根目录没有 `requirements.txt`）。
 
 ## 二、⚠️ 许可要点（必须写进材料）
 

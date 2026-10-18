@@ -82,10 +82,34 @@
 
 **主数据集许可是 `CC BY-NC 4.0`，其中 `NC` = NonCommercial（非商业性使用）。**
 
-来源：数据集自带 `README.md`：
+来源：数据集自带 `README.md`。该文件只存在于下载包外层、无版本控制，
+故**全文转录留档**于此，供附录逐项核对。
 
-> AIOps Challenge 2021 Dataset © 2021 by Dan Pei is licensed under Creative Commons
-> Attribution-NonCommercial 4.0 International.
+| 项 | 内容 |
+|---|---|
+| 数据集 | AIOps Challenge 2021 Dataset（2021 银行场景，`aiops2021-2`） |
+| 著作权人 | **Dan Pei** |
+| 年份 | 2021 |
+| **许可** | **Creative Commons Attribution-NonCommercial 4.0 International** |
+| 许可全文 | https://creativecommons.org/licenses/by-nc/4.0/ |
+| 包含内容 | 日志（logs）、指标（metric）、调用链（trace）三部分 |
+
+<details>
+<summary>数据集自带 README.md 原文（点击展开）</summary>
+
+```
+# AIOps2021
+数据来源于AIOps2021挑战赛，包含日志、指标、调用链三个部分。
+
+# Licence
+AIOps Challenge 2021 Dataset © 2021 by Dan Pei is licensed under Creative Commons Attribution-NonCommercial 4.0 International. To view a copy of this license, visit https://creativecommons.org/licenses/by-nc/4.0/
+```
+
+</details>
+
+> **另一件必须单独说明的事**：该数据集**不含任何告警文件**（只有 metric / logs / trace）。
+> 本项目的告警流是用阈值规则从 metric 生成的，**属于我们的构造、不是数据集原始内容**。
+> 因此阈值的依据单独成文，见 **`ALARM_RULES_PRIOR.md`**（含 10 条规则表、先验性证据与反调参证据）。
 
 **含义与影响**：
 

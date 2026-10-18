@@ -154,7 +154,7 @@ $env:AIOPS2021_RAW = "D:\your\path\to\AIOps2021"
 .venv\Scripts\python.exe loaders\loader_aiops2021.py
 ```
 
-> 数据集许可为 **CC BY-NC 4.0（非商用）**，详见 `THIRD_PARTY.md` 与 `docs/数据集许可说明.md`。
+> 数据集许可为 **CC BY-NC 4.0（非商用）**，详见 `THIRD_PARTY.md`「二、许可要点」（含许可原文留档）。
 
 ---
 
@@ -204,5 +204,5 @@ $env:AIOPS2021_RAW = "D:\your\path\to\AIOps2021"
 - **数据集**：AIOps Challenge 2021 Dataset © 2021 by Dan Pei，
   licensed under **CC BY-NC 4.0（署名 — 非商业性使用）**
   → 竞赛等非商业用途可用；**商业化需替换为自有数据**。
-  详见 `alarmflood/THIRD_PARTY.md` 与 `alarmflood/docs/数据集许可说明.md`。
+  详见 `alarmflood/THIRD_PARTY.md`「二、许可要点」。
 - **第三方库**许可清单：`alarmflood/THIRD_PARTY.md`

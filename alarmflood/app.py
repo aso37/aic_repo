@@ -7,8 +7,8 @@ AlarmFlood Copilot · 告警洪水治理值班台（M5 演示看板）
   - B：results/llm_rankings.json（LLM 根因排序路线）
   - B：results/reports/window_*.json（M4 处置单；未落盘时用 LLM 结果生成预览版）
   - 数据集标注 root_entity_truth 默认隐藏，仅侧边栏开关打开时用于离线核对
-运行：G:\\anaconda3\\envs\\aic\\python.exe -m streamlit run app.py
-     （或双击 run_dashboard.bat）
+运行：python -m streamlit run app.py
+     （或双击 run_dashboard.bat；完整部署说明见仓库 README「快速开始」）
 """
 import sys
 import json

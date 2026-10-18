@@ -15,8 +15,7 @@ except Exception:
 
 import pandas as pd
 
-ROOT = Path(__file__).parents[1] if "__file__" in globals() else Path(".")
-ROOT = Path(r"D:\AI_Workspace\dsh_projects\AIC\aic_repo\alarmflood")
+ROOT = Path(__file__).resolve().parents[1]   # alarmflood/，clone 到任何位置都能跑
 sys.path.insert(0, str(ROOT / "modules"))
 
 RESULTS = []

@@ -48,7 +48,7 @@ echo "最近 5 条告警:"
 tail -5 data/alerts.jsonl
 
 echo "===== [5/5] 完成 ====="
-echo "把两个文件拷回本地（在本地执行，注意改成你的服务器地址）："
-echo "  scp root@<服务器IP>:<本目录>/data/alerts.jsonl   G:/aic_repo/alarmflood/data/pilot/"
-echo "  scp root@<服务器IP>:<本目录>/data/injections.json G:/aic_repo/alarmflood/data/pilot/"
+echo "把两个文件拷回本地（在本地执行，把 <服务器IP> 和 <本地仓库> 换成你自己的）："
+echo "  scp root@<服务器IP>:<服务器上的本目录>/data/alerts.jsonl   <本地仓库>/alarmflood/data/pilot/"
+echo "  scp root@<服务器IP>:<服务器上的本目录>/data/injections.json <本地仓库>/alarmflood/data/pilot/"
 echo "清理环境： docker compose down -v"

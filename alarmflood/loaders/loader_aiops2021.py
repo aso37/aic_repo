@@ -20,13 +20,37 @@ from pathlib import Path
 #   2) 仓库同级的 aic_data/...（本机解压后的位置）
 #   3) 回退到 E:/aic_data/AIOps2021（队友机器上的既有路径）
 def _resolve_raw() -> Path:
-    if os.environ.get("AIOPS2021_RAW"):
-        return Path(os.environ["AIOPS2021_RAW"])
-    local = (Path(__file__).parents[3] / "aic_data" / "raw" / "aiops2021" /
-             "aiops2021-main" / "AIOps2021")
-    if local.exists():
-        return local
-    return Path("E:/aic_data/AIOps2021")
+    """定位数据集根目录。
+
+    找不到时给出**可操作的提示**，而不是让下游抛一个指向硬编码路径的裸 traceback
+    （旧实现在这里不校验存在性，评委 clone 后直接跑会看到一个看不懂的 FileNotFoundError）。
+    """
+    cands = []
+    env = os.environ.get("AIOPS2021_RAW")
+    if env:
+        cands.append(("环境变量 AIOPS2021_RAW", Path(env)))
+    cands.append((
+        "仓库同级 aic_data/（约定位置）",
+        Path(__file__).parents[3] / "aic_data" / "raw" / "aiops2021" / "aiops2021-main" / "AIOps2021",
+    ))
+    cands.append(("回退路径", Path("E:/aic_data/AIOps2021")))
+
+    for _desc, p in cands:
+        if (p / "aiops21_groundtruth.csv").exists():
+            return p
+
+    tried = "\n".join(f"  - {d}：{p}" for d, p in cands)
+    raise SystemExit(
+        "【未找到 AIOps2021 数据集】\n"
+        "本仓库不含数据集（体积大，且受 CC BY-NC 4.0 约束），需自行下载后再指定路径。\n"
+        "请把环境变量 AIOPS2021_RAW 指向数据集根目录（该目录下应有 "
+        "aiops21_groundtruth.csv 与 aiops2021-2/）：\n"
+        "  PowerShell : $env:AIOPS2021_RAW = 'D:\\path\\to\\AIOps2021'\n"
+        "  bash/zsh   : export AIOPS2021_RAW=/path/to/AIOps2021\n"
+        f"\n已尝试的路径：\n{tried}\n"
+        "\n只想看演示？**运行看板不需要数据集**（回放模式只读已提交的结果），"
+        "见 README「快速开始」的三行命令。"
+    )
 
 
 RAW = _resolve_raw()

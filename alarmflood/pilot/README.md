@@ -1,6 +1,6 @@
 # L2 自建试点监控栈（云服务器执行）
 
-完整操作路径见：`G:\repo\ai+\working_logs\d6\D6-L2L3-无运维同学操作路径.md`
+完整操作路径见项目内计划文档《D6-L2L3-无运维同学操作路径》（属团队内部文档，不随仓库分发）。
 
 ## 关于域名：不需要
 
@@ -20,10 +20,12 @@ bash preflight.sh      # 检查 docker / 资源 / 端口 / 外网 / 镜像拉取
 
 ## 最快上手（3 条命令）
 
+> 复制前先替换两处：`<本地仓库>` → 你自己机器上仓库根目录；`<服务器IP>` → 你的云服务器地址。
+
 ```bash
-scp -r G:/aic_repo/alarmflood/pilot root@43.142.131.159:/root/pilot   # 本地执行，上传
-cd /root/pilot && bash preflight.sh && chmod +x run_pilot.sh && ./run_pilot.sh   # 服务器执行，约 8 分钟
-scp root@43.142.131.159:/root/pilot/data/{alerts.jsonl,injections.json} G:/aic_repo/alarmflood/data/pilot/
+scp -r <本地仓库>/alarmflood/pilot root@<服务器IP>:/root/pilot                          # 本地执行，上传
+cd /root/pilot && bash preflight.sh && chmod +x run_pilot.sh && ./run_pilot.sh           # 服务器执行，约 8 分钟
+scp root@<服务器IP>:/root/pilot/data/{alerts.jsonl,injections.json} <本地仓库>/alarmflood/data/pilot/
 ```
 
 ## 目录

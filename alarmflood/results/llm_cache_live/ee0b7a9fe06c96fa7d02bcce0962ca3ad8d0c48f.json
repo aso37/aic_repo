@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "candidates": [
+    {
+      "entity": "svc-api-3",
+      "confidence": 0.8,
+      "alarm": "svc-api-<NUM> 请求P<NUM>延迟<NUM>秒超过阈值<NUM>秒",
+      "reason": "最早出现且为该实体独有新发告警，可能为故障上游",
+      "rank": 1
+    }
+  ],
+  "raw": "{\"candidates\":[{\"rank\":1,\"entity\":\"svc-api-3\",\"alarm\":\"svc-api-<NUM> 请求P<NUM>延迟<NUM>秒超过阈值<NUM>秒\",\"reason\":\"最早出现且为该实体独有新发告警，可能为故障上游\",\"confidence\":0.8}]}",
+  "usage": {
+    "prompt_tokens": 704,
+    "completion_tokens": 83
+  },
+  "json_mode": true,
+  "elapsed": 6.16,
+  "error": "",
+  "fallback": false,
+  "n_items": 4,
+  "prompt_chars": 1042,
+  "model": "glm-4-flash"
+}

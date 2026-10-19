@@ -67,6 +67,14 @@ def pretty_template(t: str) -> str:
     return str(t).replace("<NUM>", "xx")
 
 
+# ---------- 使用说明：全部收进本地 help.html，页面只留一个入口 ----------
+@st.dialog("📖 使用说明", width="large")
+def help_dialog():
+    """所有背景/原理/操作说明都在本地 help.html；页面本体不再堆说明文字。"""
+    st.iframe(ROOT / "help.html", height=640)
+    st.caption("本说明即本地文件 alarmflood/help.html，可直接双击在浏览器打开、打印或转 PDF。")
+
+
 # ---------- 内置模式数据加载（缓存：交互不重读文件） ----------
 @st.cache_data(ttl=300)
 def load_alarms():
@@ -284,13 +292,8 @@ def bordered_top1(title: str, entity: str, subline: str, color: str):
 
 
 def render_dispatch(active: dict, win_label: str):
-    """派单区：两步走（生成预览 → 值班人确认），讲清这个功能在替代什么人工动作"""
+    """派单区：两步走（生成预览 → 值班人确认）。设计说明见 help.html 第 7 节"""
     st.markdown("**派单**")
-    st.markdown(
-        "找到根因后，值班员原本要**手工**做三件事：查“这个服务归谁管”、"
-        "按格式写工单、发到对应值班群。派单把这三步合成一次点击——"
-        "系统查责任团队映射表（`config/teams.csv`）自动填好工单，"
-        "**值班人确认内容无误后才发出**（AI 只起草，不擅自执行）。")
 
     teams = load_teams()
     t = active["ticket"]
@@ -306,12 +309,7 @@ def render_dispatch(active: dict, win_label: str):
         st.markdown(f"**工单标题**：{t['title']}")
         c1, c2 = st.columns(2)
         c1.markdown(f"**责任团队**：{team}")
-        if entity in teams:
-            c1.caption(f"由根因实体 `{entity}` 查映射表得出")
-        else:
-            c1.caption("该实体未登记责任团队，请人工指定")
         c2.markdown(f"**优先级**：{t['priority']}")
-        c2.caption("由最高严重度告警决定")
         if t.get("related_changes"):
             st.markdown(f"**关联变更**：{t['related_changes']}")
 
@@ -323,7 +321,6 @@ def render_dispatch(active: dict, win_label: str):
                        key=f"dl_{win_label}")
     if st.button("✅ 值班人确认，发送工单", type="primary", key=f"send_{win_label}"):
         st.success(f"已发送给 **{team}**，状态：待值班工程师接单处理")
-        st.caption("演示环境未接真实 ITSM；正式部署时此处调用企业工单系统 webhook")
 
 
 # ---------- 窗口分析渲染（内置/导入两种模式共用） ----------
@@ -343,8 +340,6 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
 
     # ---------- ② 告警从哪来 ----------
     st.header("② 告警从哪来", anchor=False)
-    st.markdown("把窗口内告警按**三级分诊**拆开：长期反复响的是**常驻噪声**（被搁置、不作为根因证据），"
-                "故障前后才出现的是**新发信号**（根因判别的主要依据）。")
 
     tier_cnt = (wdf.groupby("tier").size()
                 .reindex(["core", "semi", "novel"]).fillna(0).astype(int))
@@ -381,7 +376,6 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
                   loc="lower right", fontsize=9)
         fig.tight_layout()  # 防止长中文模板名被裁掉
         st.pyplot(fig)
-        st.caption("颜色越暖越值得关注：红色=新发（根因证据），灰色=常驻（已搁置）")
 
     # ---------- ③ 谁是根因 ----------
     st.header("③ 谁是根因", anchor=False)
@@ -399,22 +393,16 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
     rule_top1 = rule_df["实体"].iloc[0] if not rule_df.empty else None
     llm_top1 = llm_cands[0]["entity"] if llm_cands else None
 
-    if mode == "builtin":
-        st.markdown("同一批告警证据，交给**两套独立方法**各自排序——确定性规则保证可审计，"
-                    "大模型负责推理；两路结论一致即可高置信派单。")
-        if rule_top1 and llm_top1:
-            if rule_top1 == llm_top1:
-                st.success(f"✅ **两路结论一致：{rule_top1}** —— 可高置信派单")
-            else:
-                st.warning(f"⚠️ **两路分歧**：规则路线 `{rule_top1}` / 大模型路线 `{llm_top1}`"
-                           f" —— 已触发人工复核提示")
-    else:
-        st.markdown("导入模式下由**规则路线**即时排序（确定性、可审计）；"
-                    "大模型推理与正式处置单需离线管线生成。")
+    if rule_top1 and llm_top1:
+        if rule_top1 == llm_top1:
+            st.success(f"✅ **两路结论一致：{rule_top1}** —— 可高置信派单")
+        else:
+            st.warning(f"⚠️ **两路分歧**：规则路线 `{rule_top1}` / 大模型路线 `{llm_top1}`"
+                       f" —— 已触发人工复核提示")
 
     col_a, col_b = st.columns(2)
     with col_a:
-        st.markdown("**路线 A · 规则排序**（确定性，可审计）")
+        st.markdown("**路线 A · 规则排序**")
         if rule_df.empty:
             st.info("窗口内无告警证据")
         else:
@@ -428,7 +416,7 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
                 st.dataframe(rule_df, hide_index=True, height=210, use_container_width=True)
 
     with col_b:
-        st.markdown("**路线 B · 大模型根因推理**（会推理，需校验）")
+        st.markdown("**路线 B · 大模型推理**")
 
         # —— 现场调用入口：填了 key 才出现 ——
         if creds:
@@ -442,12 +430,8 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
                 if live and st.button("清除", key=f"liveclr_{w['window_id']}"):
                     st.session_state.pop(live_key(w, creds), None)
                     st.rerun()
-            st.caption(f"模型 `{creds['model']}` · 本次将提交 {len(items)} 条去重证据"
-                       f"（约 {len(llm_live.m3_llm.build_user_message(items)) // 2:,} tokens 粗估）· "
-                       f"结果按模型缓存，重选窗口不会重复计费")
-        elif not llm_cands:
-            st.caption("在左侧「③ 路线 B · 大模型接入」填入 API Key 与模型名，"
-                       "即可现场调用你自己的模型跑这一列")
+            st.caption(f"模型 `{creds['model']}` · 证据 {len(items)} 条 · "
+                       f"约 {len(llm_live.m3_llm.build_user_message(items)) // 2:,} tokens")
 
         if live:
             u = live.get("usage") or {}
@@ -464,7 +448,7 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
                 n_cov = len(llm_data["windows"]) if llm_data else 0
                 st.info(f"本窗口暂无大模型排序结果（当前已覆盖 {n_cov} 个故障窗口）")
             else:
-                st.info("导入模式默认不调用大模型——在左侧填入 API Key 即可现场启用")
+                st.info("可在左侧「③ 路线 B · 大模型接入」填入 API Key 现场调用")
         else:
             top = llm_cands[0]
             bordered_top1(f"大模型路线 Top-1（{llm_src}）" if llm_src else "大模型路线 Top-1",
@@ -479,9 +463,6 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
             with st.expander("💬 查看大模型推理过程"):
                 for i, c in enumerate(llm_cands, 1):
                     st.markdown(f"**#{i} {c['entity']}**（{c['confidence']:.0%}）：{c['reason']}")
-
-    st.caption("规则依据：新发告警数（主证据 0.5）+ 新发越早越可疑（0.15）"
-               "+ 分层加权频次（0.2）+ 分钟共现（0.15）")
 
     if show_truth and llm_entry:
         st.divider()
@@ -520,8 +501,6 @@ def run_live_report(wdf: pd.DataFrame, rule_df: pd.DataFrame, w, creds: dict,
 def render_report_tab(wdf, rule_df, win_label, w, llm_entry, mode,
                       creds: dict | None = None, alarms: pd.DataFrame | None = None):
     st.header("④ 怎么办", anchor=False)
-    st.markdown("根因确认后，系统生成**结构化处置单**——值班工程师据此操作，"
-                "确认无误后派单到责任团队（人在回路，AI 只建议不执行）。")
 
     # —— 现场用当前模型生成处置单 ——
     live_rep = None
@@ -543,16 +522,16 @@ def render_report_tab(wdf, rule_df, win_label, w, llm_entry, mode,
     elif mode == "builtin":
         report = load_report(int(w["window_id"]))
         if report is not None:
-            st.caption("来源：处置单生成模块正式产物（results/reports/）")
+            st.caption("来源：正式处置单（离线管线）")
         elif llm_entry is not None:
             preview = preview_from_llm(llm_entry)
-            st.caption("来源：处置单模块未落盘，界面依据大模型排序结果生成预览版")
+            st.caption("来源：预览版（依据大模型排序生成）")
     else:
         if rule_df.empty:
             st.warning("窗口内无告警证据，无法生成处置单")
             return
         preview = preview_from_rule(wdf, rule_df, win_label)
-        st.caption("来源：导入模式 · 规则模板即时生成（无大模型参与）")
+        st.caption("来源：规则模板生成")
 
     active = (live_rep or {}).get("report") or report or preview
     if active is None:
@@ -601,13 +580,9 @@ SAMPLE_CSV = (
 
 # ---------- 导入模式：列映射（不要求用户改文件格式） ----------
 def render_mapping_ui(raw: pd.DataFrame, name: str):
-    """摊开「第 0 行样例值」让用户点选列角色——比逼用户把文件改成固定格式通用得多"""
-    st.header("① 这一步：告诉系统哪一列是什么", anchor=False)
-    st.markdown(
-        "**不需要**把你的告警文件改成本项目的固定格式。系统按常见列名先猜一次，"
-        "你只要对照下面这张表的**第 0 行样例值**核对，猜错了就在下拉框里改一下。\n\n"
-        "必填三项：**时间**、**实体**（哪台机器/哪个服务）、**内容**（告警文本）；"
-        "另两项可选，给了会更准（规则ID 用于三级分诊计数，级别用于严重度）。")
+    """摊开「第 0 行样例值」让用户点选列角色。详细说明见 help.html 第 9 节"""
+    st.header("① 指定各列的角色", anchor=False)
+    st.caption("无需改文件格式——对照第 0 行样例值确认即可；时间/实体/内容必填，其余可选。")
 
     cols = list(raw.columns)
     disp = [str(c) for c in cols]
@@ -643,19 +618,11 @@ def render_mapping_ui(raw: pd.DataFrame, name: str):
 
     regex = None
     if mapping["entity"] == pipeline_adhoc.ENTITY_FROM_CONTENT:
-        st.info("**没有实体列**时系统会从告警内容文本里抽实体：先按 IP / 键值对 / 域名 / "
-                "带编号名（Redis02）/ 连字符名（svc-a）正则抽；抽不出的再用**模板差分**补——"
-                "同一族模板里唯一变化的那个词就是实体（svc-a / svc-b、节点A / 节点B）。"
-                "抽取结果处理完会摊给你核对。")
         regex = st.text_input(
             "自定义正则（可选）· 用第 1 个捕获组作为实体",
             value="", key="map_regex",
             placeholder=r"例如：^\[?([\w\-\.]+)\]? 或 (?:主机|服务器)\s*(\S+)",
-            help="自动抽取不对时用它兜底；留空即用上面的自动策略")
-
-    st.caption("映射只存在本次会话内存里，不会改动你的原始文件；"
-               "时间支持 2026-10-19 10:00:01 / 2026/10/19 10:00 / ISO8601 / 秒级或毫秒级时间戳，"
-               "解析不出来的行会直接报错而不是画出负数时间轴。")
+            help="自动抽取不对时用它兜底；留空即用自动策略（说明见 help.html 第 9 节）")
 
     if st.button("⚙️ 开始处理（归并 → 抽实体 → 三级分诊 → 窗口检测 → 根因排序）",
                  type="primary", key="run_map"):
@@ -703,9 +670,8 @@ def render_entity_review(ent_stats: dict, alarms: pd.DataFrame):
         st.dataframe(sample, hide_index=True)
 
         if ent_stats["unknown"]:
-            st.warning(f"有 {ent_stats['unknown']} 条没能抽出实体，统一记作 `(未识别)`；"
-                       f"它们不参与根因归属——一个笼统的「未识别」不算证据。"
-                       f"可在下面填自定义正则后点「重新抽取」。")
+            st.warning(f"有 {ent_stats['unknown']} 条未能抽出实体，记作 `(未识别)`，"
+                       f"不参与根因归属。可在下面填正则后「重新抽取」。")
 
         rgx = st.text_input("自定义正则（第 1 个捕获组为实体）", value="",
                             key="reextract_regex",
@@ -793,10 +759,6 @@ def build_ticket_table(alarms: pd.DataFrame, floods: pd.DataFrame, mode: str,
 def render_batch_export(alarms: pd.DataFrame, floods: pd.DataFrame, mode: str):
     st.divider()
     st.header("批量导出工单（全部窗口）", anchor=False)
-    st.markdown("单个窗口派单之外，值班交接与故障复盘常常要**一次交出一批结论**："
-                "这里把全部检出窗口的根因、责任团队、优先级一次性打成一张表——"
-                "CSV 可直接贴进工单系统/表格，JSON 供下游系统对接。"
-                "同样遵循人在回路：导出的是**待确认清单**，不是自动派发。")
 
     scope = st.radio("导出范围",
                      ["全部检出窗口", "仅已有正式处置单的窗口"],
@@ -844,40 +806,15 @@ def render_batch_export(alarms: pd.DataFrame, floods: pd.DataFrame, mode: str):
                        file_name="tickets_all.csv", mime="text/csv", key="dl_csv")
     d2.download_button("⬇️ 导出全部工单（JSON）", data=payload,
                        file_name="tickets_all.json", mime="application/json", key="dl_json")
-    st.caption("导出即「待确认」状态：值班人核对后再逐条发送，AI 不擅自派发。")
 
 
 # ---------- 页面 ----------
 st.set_page_config(page_title="AlarmFlood Copilot", layout="wide")
 st.title("🚨 AlarmFlood Copilot · 告警洪水治理值班台")
-st.markdown("当故障发生、告警像洪水一样涌来时，这个值班台帮值班工程师在 **30 秒内** 回答三个问题："
-            "**发生了什么 → 谁是根因 → 接下来怎么办**。")
-
-with st.expander("📖 这个页面是什么？（首次访问请先读）", expanded=False):
-    st.markdown(
-        """
-**背景**：企业 IT 系统一次故障会在几分钟内触发成百上千条告警（告警洪水），
-值班工程师平均需要 40 分钟以上人工梳理才能定位根因。
-
-**本页面的作用**：把"告警流 → 根因 → 处置"这条人工链路自动化——
-
-| 步骤 | 页面位置 | 你看到的 | 背后的技术 |
-|---|---|---|---|
-| ① 发生了什么 | 顶部时间轴 + 左侧选窗口 | 告警洪水的时段与规模 | 告警模板归并、重复抑制、常驻搁置 |
-| ② 告警从哪来 | 页签一上半 | 每条告警是"常驻噪声"还是"新发信号" | 三级告警分诊 |
-| ③ 谁是根因 | 页签一下半 | 两套方法各自给出根因排序并互相印证 | 规则排序（确定性）× 大模型推理 |
-| ④ 怎么办 | 页签二 | 结构化处置单 + 派单 | 大模型生成 + 幻觉校验 |
-| ⑤ 批量导出 | 页签二底部 | 一批窗口的根因/责任团队/优先级打成一张表 | 规则排序 + 责任团队映射 |
-
-**三种玩法**：
-1. 左侧数据源选「内置演示数据集」看完整双路对比（大模型列为离线已跑好的产物）；
-2. 选「导入新告警流」上传你自己的告警文件，**不用改格式**——
-   在页面里点一下哪一列是时间/实体/内容，现场跑一遍处理流水线；
-3. 在左侧「③ 路线 B · 大模型接入」**填入你自己的 API Key 和模型名**，
-   即可对任意窗口（含导入的数据）现场调用大模型跑路线 B 与处置单生成。
-   密钥只存在浏览器会话内存里，不写盘、不上传，刷新即失效；不填也完全能用。
-        """
-    )
+_title_c, _help_c = st.columns([6, 1])
+with _help_c:
+    if st.button("📖 使用说明", help="背景、原理与完整操作指南（本地 help.html）"):
+        help_dialog()
 
 # ================= 侧边栏：① 数据源 → ② 窗口 → ③ 大模型接入 =================
 def render_llm_config():
@@ -910,8 +847,7 @@ def render_llm_config():
             st.session_state["llm_cfg"] = {"api_key": key.strip(),
                                            "base_url": base.strip(),
                                            "model": model.strip()}
-            st.caption("🔑 密钥只存在本次浏览器会话内存里：**不写盘、不上传、不进日志**，"
-                       "刷新页面即失效；请求只发往上面填的接口地址。")
+            st.caption("🔑 密钥仅存会话内存：不写盘、不上传、不进日志（详见使用说明）")
             if st.button("🔌 测试连接", key="llm_test"):
                 c, err = llm_live.make_client(key.strip(), base.strip(), model.strip())
                 if c is None:
@@ -926,7 +862,7 @@ def render_llm_config():
                         st.error(f"调用失败：{r['error']}")
         else:
             st.session_state.pop("llm_cfg", None)
-            st.caption(f"未启用（{why}）。不填也能正常用——路线 A 与全部已有产物不受影响。")
+            st.caption(f"未启用（{why}）")
 
 
 st.sidebar.header("① 数据源")
@@ -943,8 +879,7 @@ if mode == "builtin":
     if llm_data:
         st.sidebar.caption(f"大模型路线：{llm_data['model']} · 覆盖 {len(llm_data['windows'])} 个故障窗口")
 else:
-    st.sidebar.caption("支持 csv / json / jsonl / parquet。**不用改文件格式**："
-                       "上传后在页面里点一下哪一列是时间/实体/内容即可。")
+    st.sidebar.caption("支持 csv / json / jsonl / parquet，不用改格式")
     st.sidebar.download_button("📄 下载示例文件（照葫芦画瓢用）",
                                data=SAMPLE_CSV, file_name="alarm_sample.csv",
                                mime="text/csv")
@@ -1001,9 +936,7 @@ elif mode == "upload" and alarms is None:
     if raw is not None:
         render_mapping_ui(raw, up.name)
     else:
-        st.info("👈 在左侧上传告警文件（csv / json / jsonl / parquet），"
-                "然后在页面里点选哪一列是时间/实体/内容，即可对你的告警流"
-                "现场执行归并、三级分诊与根因排序。")
+        st.info("👈 在左侧上传告警文件，点选各列角色后即可现场处理")
     st.stop()
 else:
     render_llm_config()

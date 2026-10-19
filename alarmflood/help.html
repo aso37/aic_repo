@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlarmFlood Copilot · 使用说明</title>
+<style>
+  :root { --line:#e3e6ea; --accent:#D85A30; --muted:#6b7280; }
+  * { box-sizing:border-box; }
+  body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; color:#24292f;
+         max-width:880px; margin:0 auto; padding:32px 28px 64px; line-height:1.75; }
+  h1 { font-size:26px; border-bottom:3px solid var(--accent); padding-bottom:10px; }
+  h2 { font-size:19px; margin-top:40px; border-left:4px solid var(--accent); padding-left:10px; }
+  h3 { font-size:16px; margin-top:22px; }
+  table { border-collapse:collapse; width:100%; margin:14px 0; font-size:14px; }
+  th,td { border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:#f6f8fa; }
+  code { background:#f6f8fa; border:1px solid var(--line); border-radius:4px;
+         padding:1px 5px; font-size:13px; }
+  .box { border:1px solid var(--line); border-left:4px solid var(--accent);
+         background:#fdf8f5; padding:10px 14px; border-radius:6px; margin:14px 0; font-size:14px; }
+  .toc { background:#f6f8fa; border:1px solid var(--line); border-radius:8px;
+         padding:14px 22px; font-size:14px; columns:2; }
+  .toc a { color:#1f6feb; text-decoration:none; display:block; }
+  .tag { display:inline-block; font-size:12px; border-radius:10px; padding:0 8px;
+         margin-right:6px; color:#fff; }
+  .t-novel { background:#D85A30; } .t-semi { background:#EF9F27; } .t-core { background:#9E9E9E; }
+  footer { margin-top:48px; color:var(--muted); font-size:13px; border-top:1px solid var(--line);
+           padding-top:12px; }
+  @media print { body { padding:0; } }
+</style>
+</head>
+<body>
+
+<h1>🚨 AlarmFlood Copilot · 使用说明</h1>
+<p>本文件是值班台（<code>app.py</code>）的完整操作说明。页面本身只保留结论与操作按钮，
+所有背景、原理与使用方法都在这里。</p>
+
+<nav class="toc">
+  <a href="#s1">1. 这是什么</a>
+  <a href="#s2">2. 页面导览</a>
+  <a href="#s3">3. 三种使用方式</a>
+  <a href="#s4">4. 三级分诊与瀑布图</a>
+  <a href="#s5">5. 路线 A：规则排序</a>
+  <a href="#s6">6. 路线 B：大模型推理</a>
+  <a href="#s7">7. 处置单与派单</a>
+  <a href="#s8">8. 批量导出工单</a>
+  <a href="#s9">9. 导入自己的告警流</a>
+  <a href="#s10">10. 数据来源与隐私</a>
+</nav>
+
+<h2 id="s1">1. 这是什么</h2>
+<p>企业 IT 系统一次故障会在几分钟内触发成百上千条告警（<b>告警洪水</b>），
+值班工程师平均需要 40 分钟以上人工梳理才能定位根因。</p>
+<p>本值班台把「告警流 → 根因 → 处置」这条人工链路自动化，帮值班工程师在
+<b>30 秒内</b>回答三个问题：<b>发生了什么 → 谁是根因 → 接下来怎么办</b>。</p>
+
+<h2 id="s2">2. 页面导览</h2>
+<table>
+  <tr><th>步骤</th><th>页面位置</th><th>你看到的</th><th>背后的技术</th></tr>
+  <tr><td>① 发生了什么</td><td>顶部时间轴 + 左侧选窗口</td><td>告警洪水的时段与规模</td><td>告警模板归并、重复抑制、常驻搁置</td></tr>
+  <tr><td>② 告警从哪来</td><td>页签一上半</td><td>每条告警是「常驻噪声」还是「新发信号」</td><td>三级告警分诊</td></tr>
+  <tr><td>③ 谁是根因</td><td>页签一下半</td><td>两套方法各自给出根因排序并互相印证</td><td>规则排序（确定性）× 大模型推理</td></tr>
+  <tr><td>④ 怎么办</td><td>页签二</td><td>结构化处置单 + 派单</td><td>大模型生成 + 幻觉校验</td></tr>
+  <tr><td>⑤ 批量导出</td><td>页签二底部</td><td>一批窗口的根因/责任团队/优先级打成一张表</td><td>规则排序 + 责任团队映射</td></tr>
+</table>
+
+<h2 id="s3">3. 三种使用方式</h2>
+<h3>方式一：内置演示数据集</h3>
+<p>左侧「① 数据源」选「内置演示数据集」——只读已跑好的分析产物，不需要任何配置与密钥。
+数据为公开的银行微服务数据集（AIOps 挑战赛），原始告警 101,478 条，
+经重复抑制与常驻搁置后剩 14,806 条（-85.4%），检出 895 个洪水窗口。
+大模型列默认展示离线已跑好的产物。</p>
+
+<h3>方式二：导入新告警流</h3>
+<p>选「导入新告警流」，上传 csv / json / jsonl / parquet 格式的告警文件，
+<b>不用改文件格式</b>——上传后在页面里点选哪一列是时间/实体/内容即可，详见第 9 节。</p>
+
+<h3>方式三：现场启用路线 B（填自己的 API Key）</h3>
+<p>左侧「③ 路线 B · 大模型接入」填入 <b>API Key + 接口地址 + 模型名</b>
+（内置 OpenAI / DeepSeek / 通义千问 / 智谱 GLM / Moonshot / 本地 Ollama 预设，选预设自动填地址和模型），
+即可对<b>任意窗口（含导入的数据）</b>现场调用大模型跑根因推理与处置单生成。
+「🔌 测试连接」会用一条最短请求验证 key / 接口 / 模型是否真的能通。
+不填密钥时看板照常使用，详见第 6、7 节。</p>
+
+<h2 id="s4">4. 三级分诊与瀑布图</h2>
+<p>窗口内的告警按出现规律分为三级，这是整套系统的判别基础：</p>
+<table>
+  <tr><th>层级</th><th>含义</th><th>在根因分析中的地位</th></tr>
+  <tr><td><span class="tag t-novel">新发 novel</span></td><td>故障前后才出现的告警</td><td><b>主要证据</b>——根因大概率在发出新发告警的实体里</td></tr>
+  <tr><td><span class="tag t-semi">半常驻 semi</span></td><td>周期性出现的背景告警</td><td>辅助证据</td></tr>
+  <tr><td><span class="tag t-core">常驻 core</span></td><td>全天候反复响的告警</td><td>已搁置，不作为根因证据</td></tr>
+</table>
+<p>瀑布图（模板 × 时间）中：红色 = 新发信号，橙色 = 半常驻，灰色 = 常驻噪声；
+横轴为窗口内时间偏移，条形越长表示该模板告警越多。</p>
+
+<h2 id="s5">5. 路线 A：规则排序（确定性，可审计）</h2>
+<p>不依赖任何模型，四路加权打分，结果完全可复现：</p>
+<table>
+  <tr><th>信号</th><th>权重</th><th>含义</th></tr>
+  <tr><td>新发告警数</td><td>0.5</td><td>主证据：该实体在窗口内有多少条「新发」告警</td></tr>
+  <tr><td>新发越早越可疑</td><td>0.15</td><td>根因通常最先报警</td></tr>
+  <tr><td>分层加权频次</td><td>0.2</td><td>新发计 2.0、半常驻 1.0、常驻 0.5</td></tr>
+  <tr><td>分钟共现</td><td>0.15</td><td>与窗口内其他实体同分钟出现的程度</td></tr>
+</table>
+
+<h2 id="s6">6. 路线 B：大模型根因推理</h2>
+<p>同一批告警证据交给大模型排序，与路线 A 互相印证：<b>两路结论一致即可高置信派单，
+分歧则触发人工复核</b>（页面会自动给出提示）。</p>
+<h3>离线产物 vs 实时调用</h3>
+<ul>
+  <li><b>离线产物</b>：由离线管线批量生成（<code>results/llm_rankings.json</code>），
+      不花钱、开箱即看，但只覆盖内置数据集的故障窗口；</li>
+  <li><b>实时调用</b>：填入自己的 key 后点「▶ 现场调用大模型分析本窗口」，
+      任何窗口（包括你导入的数据）都能跑，会显示模型名、耗时、token 用量。</li>
+</ul>
+<div class="box">实时调用与离线管线用的是<b>同一份 prompt</b>，因此实时结果可以和离线产物直接对照；
+实时结果按「模型 + 内容」缓存在 <code>results/llm_cache_live/</code>，重选窗口不重复计费，
+<b>换模型必然重算</b>，不会串味。</div>
+<h3>幻觉防护（如实披露）</h3>
+<ul>
+  <li>模型返回的实体若不在窗口证据内，一律过滤；</li>
+  <li>若候选<b>全部</b>是幻觉，界面会明确标注「已按规则排序兜底——这一列不属于大模型成绩」，不冒充；</li>
+  <li>处置单同理：实体校验不通过就走降级模板，并标注「未采用其原始结论」。</li>
+</ul>
+
+<h2 id="s7">7. 处置单与派单</h2>
+<p>根因确认后系统生成<b>结构化处置单</b>（摘要 / 根因判定 / 处置建议 / 已归并告警），
+值班工程师据此操作。处置单可以导出 JSON。</p>
+<h3>派单：两步走（人在回路）</h3>
+<p>找到根因后，值班员原本要<b>手工</b>做三件事：查「这个服务归谁管」、按格式写工单、
+发到对应值班群。派单把这三步合成一次点击——系统查责任团队映射表
+（<code>config/teams.csv</code>）自动填好工单，<b>值班人确认内容无误后才发出</b>（AI 只起草，不擅自执行）。</p>
+<ul>
+  <li>「📝 生成工单预览」：填好标题 / 责任团队 / 优先级；实体未登记团队时显示「待指定」，需人工指定；</li>
+  <li>优先级规则：有新发告警且置信度 ≥ 0.7 → P1，有新发告警 → P2，否则 P3；</li>
+  <li>「✅ 值班人确认，发送工单」：确认后才发出。演示环境未接真实 ITSM，
+      正式部署时此处调用企业工单系统 webhook。</li>
+</ul>
+
+<h2 id="s8">8. 批量导出工单（全部窗口）</h2>
+<p>单个窗口派单之外，值班交接与故障复盘常常要<b>一次交出一批结论</b>：
+全部检出窗口的根因、责任团队、优先级一次性打成一张表——
+CSV 可直接贴进工单系统/表格（UTF-8 BOM，Excel 打开中文不乱码），JSON 供下游系统对接。</p>
+<ul>
+  <li><b>导出范围</b>：全部检出窗口 / 仅已有正式处置单的窗口
+      （正式处置单由离线管线含大模型+幻觉校验生成，其余窗口用确定性规则路线给根因候选）；</li>
+  <li><b>最少告警条数</b>：一条告警就下根因结论没有说服力，默认过滤掉 &lt;3 条的窗口；</li>
+  <li><b>证据强度</b>：≥10 条且有新发告警 = 强，≥5 条 = 中，否则 = 弱（建议优先复核）；</li>
+  <li>无新发告警的窗口置信度一栏如实写「—」，不编造百分比；</li>
+  <li>导出即「待确认」状态：值班人核对后再逐条发送，AI 不擅自派发。</li>
+</ul>
+
+<h2 id="s9">9. 导入自己的告警流</h2>
+<h3>支持格式与列映射</h3>
+<p>支持 csv / json / jsonl / parquet。<b>不需要</b>把文件改成任何固定格式：系统按常见列名先猜一次
+（时间 / 实体 / 内容三类必填；规则ID、级别可选，给了会更准），你只需对照<b>第 0 行样例值</b>
+在下拉框里核对、猜错了改一下。映射只存在本次会话内存里，<b>不会改动你的原始文件</b>。</p>
+<p>时间列支持：<code>2026-10-19 10:00:01</code> / <code>2026/10/19 10:00</code> / ISO8601 /
+秒级或毫秒级时间戳（自动判别）。解析不出来的行会直接报错，而不是画出错误的时间轴。</p>
+<h3>没有实体列？从告警内容里抽</h3>
+<p>很多告警系统只有一列文本（如「主机 web01 CPU 使用率 95%」）。实体列下拉框选
+「⟳ 从告警内容中抽取」，系统按三级策略自动抽：</p>
+<ol>
+  <li><b>正则链</b>：IP → 键值对（<code>host=node-7</code>）→ 中文前缀（主机 web01）→
+      域名 → 带编号名（Redis02）→ 连字符名（svc-a）；</li>
+  <li><b>模板内差分</b>：同一模板下「同一位置变化的非数字词」即实体（svc-a / svc-b）；</li>
+  <li><b>模板间差分</b>：一族只差一个词的模板（节点A / 节点B），差异位即实体；</li>
+  <li>仍抽不出 → 如实记 <code>(未识别)</code>，<b>不参与根因归属</b>——一个笼统的「未识别」不算证据。</li>
+</ol>
+<p>处理完成后有「实体抽取结果核对」面板：覆盖率、各方法命中条数、Top 实体、
+内容→实体→方法样例。抽得不准可填<b>自定义正则</b>（取第 1 个捕获组）点「重新抽取」，不用重传文件。</p>
+
+<h2 id="s10">10. 数据来源与隐私</h2>
+<table>
+  <tr><th>模式</th><th>数据</th><th>隐私</th></tr>
+  <tr><td>内置演示</td><td>AIOps 挑战赛公开数据集（银行系统）</td><td>界面只读本地分析产物，不上传</td></tr>
+  <tr><td>导入模式</td><td>你上传的告警文件</td><td>仅在本机内存处理，不落盘、不上传</td></tr>
+  <tr><td>路线 B 实时调用</td><td>窗口内的去重告警证据</td><td>请求只发往你自己填的接口地址</td></tr>
+</table>
+<div class="box"><b>🔑 密钥安全</b>：API Key 只存在浏览器会话内存里——不写盘、不上传、不进日志，
+不随任何产物落盘，刷新页面即失效。实时调用的缓存只保存模型输出的结论，
+不保存密钥。</div>
+
+<footer>
+  AlarmFlood Copilot · 告警洪水治理值班台 · 本说明页为本地文件
+  <code>alarmflood/help.html</code>，可直接双击在浏览器打开、打印或转 PDF。
+</footer>
+
+</body>
+</html>

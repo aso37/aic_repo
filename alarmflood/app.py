@@ -32,6 +32,11 @@ sys.path.insert(0, str(ROOT / "modules"))
 from m3_rank import rank_entities  # noqa: E402  A 的规则排序路线
 import pipeline_adhoc  # noqa: E402  导入模式轻量流水线
 
+try:  # 现场启用路线 B 用；没装 openai 也不影响其余功能（模块内是惰性导入）
+    import llm_live  # noqa: E402
+except Exception:    # noqa: BLE001
+    llm_live = None
+
 # ---------- 开发期热重载 ----------
 # Streamlit 每次交互只重跑 app.py 本身，modules/ 下的改动不会自动生效——
 # 改完代码界面还是旧的，典型症状就是 "module 'pipeline_adhoc' has no attribute ..."。
@@ -39,7 +44,8 @@ import pipeline_adhoc  # noqa: E402  导入模式轻量流水线
 import os
 import importlib
 
-for _name in ("pipeline_adhoc", "entity_extract", "m1_templater", "m2_window", "m3_rank"):
+for _name in ("pipeline_adhoc", "entity_extract", "m1_templater", "m2_window",
+              "m3_rank", "llm_live"):
     _mod = sys.modules.get(_name)
     _file = getattr(_mod, "__file__", None) if _mod is not None else None
     if not _file or not os.path.exists(_file):
@@ -124,6 +130,50 @@ def llm_top_entities(entry):
         if e not in merged or c["confidence"] > merged[e]["confidence"]:
             merged[e] = c
     return sorted(merged.values(), key=lambda c: (-c["confidence"], c["rank"]))[:5]
+
+
+# ---------- 路线 B 实时接入（用户在侧边栏填 API Key + 模型名才启用） ----------
+def llm_creds():
+    """侧边栏填好的凭据；没填/没填全返回 None（此时路线 B 仍走离线产物）。
+
+    为什么读 llm_cfg 而不是直接读控件：Streamlit 会清掉**本次未渲染**的控件状态。
+    导入模式在跑流水线之前会 st.stop()（页面停在列映射），③ 区没渲染 → 已填的
+    key/model 会被清空。所以配置区一通过自检就把凭据固化到普通会话键 llm_cfg 里。
+    """
+    if llm_live is None:
+        return None
+    cfg = st.session_state.get("llm_cfg")
+    if cfg and cfg.get("model"):
+        return cfg
+    return None
+
+
+def live_key(w, creds: dict) -> str:
+    """实时结果在会话里的键：按 窗口 + 模型 分开存，换模型不会串味"""
+    return f"live_{int(w['window_id'])}_{creds['model']}"
+
+
+def run_live_rank(wdf: pd.DataFrame, w, creds: dict):
+    """现场调用大模型做一次根因推理；结果只存会话内存，失败给可读错误"""
+    client, err = llm_live.make_client(creds["api_key"], creds["base_url"], creds["model"])
+    if client is None:
+        st.error(f"大模型接入失败：{err}")
+        return
+    with st.spinner(f"正在调用 {creds['model']} 分析本窗口（首次调用约数秒）…"):
+        res = llm_live.rank_window(wdf, client, creds["model"])
+    if not res.get("ok"):
+        st.error(f"调用失败：{res.get('error') or '未知错误'}")
+        return
+    st.session_state[live_key(w, creds)] = res
+    st.rerun()
+
+
+def live_cands_to_df(cands: list) -> pd.DataFrame:
+    return pd.DataFrame([{
+        "排名": c.get("rank", i), "实体": c["entity"],
+        "置信度": f"{c['confidence']:.0%}" if c["confidence"] else "—",
+        "依据告警": pretty_template(c["alarm"]),
+    } for i, c in enumerate(cands, 1)])
 
 
 def rule_rank_df(wdf: pd.DataFrame) -> pd.DataFrame:
@@ -278,7 +328,7 @@ def render_dispatch(active: dict, win_label: str):
 
 # ---------- 窗口分析渲染（内置/导入两种模式共用） ----------
 def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
-                           mode: str):
+                           mode: str, creds: dict | None = None):
     wdf = alarms[(alarms.timestamp >= w["st_ms"]) & (alarms.timestamp <= w["ed_ms"])]
     win_label = f"#{w['window_id']} {pd.to_datetime(w['st_ms'], unit='ms'):%m-%d %H:%M}"
 
@@ -336,7 +386,16 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
     # ---------- ③ 谁是根因 ----------
     st.header("③ 谁是根因", anchor=False)
     rule_df = rule_rank_df(wdf)
-    llm_cands = llm_top_entities(llm_entry) if llm_entry else []
+
+    # 路线 B 的实时结果（上一轮调用留下的）优先于离线产物展示
+    live = st.session_state.get(live_key(w, creds)) if creds else None
+    if live and live.get("candidates"):
+        llm_cands = live["candidates"]
+        llm_src = f"实时调用 · {live.get('model', creds['model'])}"
+    else:
+        llm_cands = llm_top_entities(llm_entry) if llm_entry else []
+        llm_src = "离线产物" if llm_cands else ""
+        live = None
     rule_top1 = rule_df["实体"].iloc[0] if not rule_df.empty else None
     llm_top1 = llm_cands[0]["entity"] if llm_cands else None
 
@@ -370,22 +429,49 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
 
     with col_b:
         st.markdown("**路线 B · 大模型根因推理**（会推理，需校验）")
+
+        # —— 现场调用入口：填了 key 才出现 ——
+        if creds:
+            items = llm_live.m3_llm.build_evidence(wdf, "llm")
+            go, clr = st.columns([3, 1])
+            with go:
+                if st.button("▶ 现场调用大模型分析本窗口", type="primary",
+                             key=f"livebtn_{w['window_id']}"):
+                    run_live_rank(wdf, w, creds)
+            with clr:
+                if live and st.button("清除", key=f"liveclr_{w['window_id']}"):
+                    st.session_state.pop(live_key(w, creds), None)
+                    st.rerun()
+            st.caption(f"模型 `{creds['model']}` · 本次将提交 {len(items)} 条去重证据"
+                       f"（约 {len(llm_live.m3_llm.build_user_message(items)) // 2:,} tokens 粗估）· "
+                       f"结果按模型缓存，重选窗口不会重复计费")
+        elif not llm_cands:
+            st.caption("在左侧「③ 路线 B · 大模型接入」填入 API Key 与模型名，"
+                       "即可现场调用你自己的模型跑这一列")
+
+        if live:
+            u = live.get("usage") or {}
+            st.caption(f"🟢 {llm_src} · 耗时 {live.get('elapsed', 0):.1f}s · "
+                       f"token {u.get('prompt_tokens') or 0}+{u.get('completion_tokens') or 0}"
+                       + (" · 命中本地缓存" if live.get("cached") else ""))
+            if live.get("fallback"):
+                st.warning("⚠️ 该模型返回的候选实体全部不在窗口证据内（疑似幻觉），"
+                           "已按规则排序兜底——**这一列不属于大模型成绩**")
+
         if not llm_cands:
             if mode == "builtin":
                 llm_data = load_llm()
                 n_cov = len(llm_data["windows"]) if llm_data else 0
                 st.info(f"本窗口暂无大模型排序结果（当前已覆盖 {n_cov} 个故障窗口）")
             else:
-                st.info("导入模式不调用大模型——接入离线管线后可获得本列结果")
+                st.info("导入模式默认不调用大模型——在左侧填入 API Key 即可现场启用")
         else:
             top = llm_cands[0]
-            bordered_top1("大模型路线 Top-1", top["entity"],
+            bordered_top1(f"大模型路线 Top-1（{llm_src}）" if llm_src else "大模型路线 Top-1",
+                          top["entity"],
                           f"置信度 {top['confidence']:.0%} · 告警「{pretty_template(top['alarm'])}」",
                           "blue")
-            llm_df = pd.DataFrame([{
-                "排名": i, "实体": c["entity"], "置信度": f"{c['confidence']:.0%}",
-                "依据告警": pretty_template(c["alarm"]),
-            } for i, c in enumerate(llm_cands, 1)])
+            llm_df = live_cands_to_df(llm_cands)
             try:
                 st.dataframe(llm_df, width="stretch", hide_index=True, height=150)
             except TypeError:
@@ -409,13 +495,52 @@ def render_window_analysis(alarms: pd.DataFrame, w, llm_entry, show_truth: bool,
     return wdf, rule_df, win_label
 
 
-def render_report_tab(wdf, rule_df, win_label, w, llm_entry, mode):
+def run_live_report(wdf: pd.DataFrame, rule_df: pd.DataFrame, w, creds: dict,
+                    alarms: pd.DataFrame):
+    """用当前填的模型现场生成处置单草稿（同一份 M4 prompt + 幻觉校验 + 降级）"""
+    client, err = llm_live.make_client(creds["api_key"], creds["base_url"], creds["model"])
+    if client is None:
+        st.error(f"大模型接入失败：{err}")
+        return
+    win = {"window_id": int(w["window_id"]), "st_ms": int(w["st_ms"]),
+           "ed_ms": int(w["ed_ms"]), "minutes": int(w["minutes"]),
+           # 内置产物叫 n_all_alarms、导入模式叫 n_alarms，两种都要兜住
+           "n_all_alarms": int(w.get("n_all_alarms", w.get("n_alarms", len(wdf))))}
+    cands = llm_live.m4_report.pick_candidates(wdf, "rule")
+    with st.spinner(f"正在用 {creds['model']} 生成处置单…"):
+        res = llm_live.draft_report(wdf, cands, client, creds["model"], win,
+                                    load_teams(), alarms)
+    if not res.get("ok"):
+        st.error(f"生成失败：{res.get('error') or '未知错误'}")
+        return
+    st.session_state[f"liverep_{win['window_id']}_{creds['model']}"] = res
+    st.rerun()
+
+
+def render_report_tab(wdf, rule_df, win_label, w, llm_entry, mode,
+                      creds: dict | None = None, alarms: pd.DataFrame | None = None):
     st.header("④ 怎么办", anchor=False)
     st.markdown("根因确认后，系统生成**结构化处置单**——值班工程师据此操作，"
                 "确认无误后派单到责任团队（人在回路，AI 只建议不执行）。")
 
+    # —— 现场用当前模型生成处置单 ——
+    live_rep = None
+    if creds:
+        lk = f"liverep_{int(w['window_id'])}_{creds['model']}"
+        if st.button("🤖 用当前模型现场生成处置单", key=f"liverepbtn_{w['window_id']}"):
+            run_live_report(wdf, rule_df, w, creds, alarms if alarms is not None else wdf)
+        live_rep = st.session_state.get(lk)
+        if live_rep and live_rep.get("report"):
+            if live_rep.get("downgraded"):
+                st.warning("⚠️ 该模型输出的根因实体不在窗口证据内（疑似幻觉），"
+                           "已按规则候选降级生成——未采用其原始结论")
+            st.caption(f"🟢 实时生成 · {creds['model']} · 耗时 {live_rep.get('elapsed', 0):.1f}s"
+                       + (" · 命中本地缓存" if live_rep.get("cached") else ""))
+
     report, preview = None, None
-    if mode == "builtin":
+    if live_rep and live_rep.get("report"):
+        pass  # 实时结果优先展示，上面已注明来源
+    elif mode == "builtin":
         report = load_report(int(w["window_id"]))
         if report is not None:
             st.caption("来源：处置单生成模块正式产物（results/reports/）")
@@ -429,7 +554,7 @@ def render_report_tab(wdf, rule_df, win_label, w, llm_entry, mode):
         preview = preview_from_rule(wdf, rule_df, win_label)
         st.caption("来源：导入模式 · 规则模板即时生成（无大模型参与）")
 
-    active = report or preview
+    active = (live_rep or {}).get("report") or report or preview
     if active is None:
         st.warning("本窗口既无处置单也无大模型排序结果。"
                    "演示建议选 **#377**（已有示例处置单）或侧边栏靠前的窗口。")
@@ -744,13 +869,66 @@ with st.expander("📖 这个页面是什么？（首次访问请先读）", exp
 | ④ 怎么办 | 页签二 | 结构化处置单 + 派单 | 大模型生成 + 幻觉校验 |
 | ⑤ 批量导出 | 页签二底部 | 一批窗口的根因/责任团队/优先级打成一张表 | 规则排序 + 责任团队映射 |
 
-**两种玩法**：左侧数据源选「内置演示数据集」看完整双路对比；
-选「导入新告警流」上传你自己的告警文件，**不用改格式**——
-在页面里点一下哪一列是时间/实体/内容，现场跑一遍处理流水线。
+**三种玩法**：
+1. 左侧数据源选「内置演示数据集」看完整双路对比（大模型列为离线已跑好的产物）；
+2. 选「导入新告警流」上传你自己的告警文件，**不用改格式**——
+   在页面里点一下哪一列是时间/实体/内容，现场跑一遍处理流水线；
+3. 在左侧「③ 路线 B · 大模型接入」**填入你自己的 API Key 和模型名**，
+   即可对任意窗口（含导入的数据）现场调用大模型跑路线 B 与处置单生成。
+   密钥只存在浏览器会话内存里，不写盘、不上传，刷新即失效；不填也完全能用。
         """
     )
 
-# ================= 侧边栏：① 数据源 → ② 窗口 =================
+# ================= 侧边栏：① 数据源 → ② 窗口 → ③ 大模型接入 =================
+def render_llm_config():
+    """侧边栏 ③ 区：填 API Key / 接口地址 / 模型名。通过自检后写入 llm_cfg。
+
+    注意：这个函数必须在**所有 st.stop() 之前定义**——导入模式停在列映射页时会
+    先调用它再 stop，否则已填的凭据控件会因"本次未渲染"被 Streamlit 清空。
+    """
+    st.sidebar.header("③ 路线 B · 大模型接入（可选）")
+    with st.sidebar.expander("🤖 填入 API Key 现场启用",
+                             expanded="llm_cfg" not in st.session_state):
+        if llm_live is None:
+            st.caption("未加载实时调用模块（缺少 openai 依赖）；路线 A 与已有产物不受影响")
+            return
+        preset = st.selectbox("厂商预设", list(llm_live.PRESETS), key="llm_preset")
+        pv = llm_live.PRESETS[preset]
+        if pv and st.session_state.get("_llm_preset") != preset:
+            # 切预设就把地址/模型重置为该厂商默认，用户随后仍可自由改
+            st.session_state["llm_base"] = pv[0]
+            st.session_state["llm_model"] = pv[1]
+            st.session_state["_llm_preset"] = preset
+        key = st.text_input("API Key", type="password", key="llm_key",
+                            placeholder="sk-…（本地 Ollama 可留空）") or ""
+        base = st.text_input("接口地址 Base URL", key="llm_base",
+                             placeholder="https://api.openai.com/v1") or ""
+        model = st.text_input("模型名", key="llm_model", placeholder="gpt-4o-mini") or ""
+
+        ok, why = llm_live.check_ready(key, model, base)
+        if ok:
+            st.session_state["llm_cfg"] = {"api_key": key.strip(),
+                                           "base_url": base.strip(),
+                                           "model": model.strip()}
+            st.caption("🔑 密钥只存在本次浏览器会话内存里：**不写盘、不上传、不进日志**，"
+                       "刷新页面即失效；请求只发往上面填的接口地址。")
+            if st.button("🔌 测试连接", key="llm_test"):
+                c, err = llm_live.make_client(key.strip(), base.strip(), model.strip())
+                if c is None:
+                    st.error(f"接入失败：{err}")
+                else:
+                    with st.spinner("正在发一条最短请求验证 key / 接口 / 模型…"):
+                        r = llm_live.test_connection(c, model.strip())
+                    if r["ok"]:
+                        st.success(f"✅ 连通 · {model.strip()} · {r['elapsed']}s · "
+                                   f"回复「{r['reply']}」")
+                    else:
+                        st.error(f"调用失败：{r['error']}")
+        else:
+            st.session_state.pop("llm_cfg", None)
+            st.caption(f"未启用（{why}）。不填也能正常用——路线 A 与全部已有产物不受影响。")
+
+
 st.sidebar.header("① 数据源")
 mode_label = st.sidebar.selectbox(
     "选择数据来源",
@@ -819,6 +997,7 @@ if alarms is not None and not floods.empty:
                                f" · {r.n_alarms}条/{r.minutes}分钟"))
     w = {c: getattr(w_row, c) for c in floods_sorted.columns}
 elif mode == "upload" and alarms is None:
+    render_llm_config()   # 本分支会 stop，必须先渲染，否则填过的 key/model 被清空
     if raw is not None:
         render_mapping_ui(raw, up.name)
     else:
@@ -827,9 +1006,12 @@ elif mode == "upload" and alarms is None:
                 "现场执行归并、三级分诊与根因排序。")
     st.stop()
 else:
+    render_llm_config()
     st.warning("未检出事件窗口：告警流中没有足够的非常驻告警聚集。"
                "这本身也是一个结论——当前没有发生告警洪水。")
     st.stop()
+
+render_llm_config()
 
 show_truth = (st.sidebar.toggle("显示数据集标注（仅供核对）", value=False)
               if mode == "builtin" else False)
@@ -878,8 +1060,11 @@ llm_entry = match_llm(w["st_ms"], w["ed_ms"]) if mode == "builtin" else None
 
 tab1, tab2 = st.tabs(["📋 ①~③ 发生了什么 / 谁是根因",
                       "📄 ④ 怎么办：处置单 · 派单 · 批量导出"])
+creds = llm_creds()  # 侧边栏填了 API Key + 模型名才非 None
+
 with tab1:
-    wdf, rule_df, win_label = render_window_analysis(alarms, w, llm_entry, show_truth, mode)
+    wdf, rule_df, win_label = render_window_analysis(alarms, w, llm_entry, show_truth,
+                                                     mode, creds)
 with tab2:
-    render_report_tab(wdf, rule_df, win_label, w, llm_entry, mode)
+    render_report_tab(wdf, rule_df, win_label, w, llm_entry, mode, creds, alarms)
     render_batch_export(alarms, floods, mode)

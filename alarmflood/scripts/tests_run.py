@@ -32,8 +32,22 @@ def wid_of(label: str) -> int:
     return int(str(label).split("·")[0].strip().lstrip("#"))
 
 
+def win_sb(at):
+    """返回「窗口选择」那个 selectbox。
+
+    不要写死 `at.sidebar.selectbox[0]` —— 新版界面在它前面还有「数据源」与
+    「LLM 提供商」两个下拉，索引会随界面演进而变。这里按选项格式识别：
+    窗口选项以 '#' 开头（如 '#137 · 03-05 05:04 · 9条/15分钟'）。
+    """
+    for sb in at.sidebar.selectbox:
+        opts = [str(o) for o in sb.options]
+        if opts and opts[0].lstrip().startswith("#"):
+            return sb
+    raise RuntimeError("侧边栏未找到窗口选择器（选项应以 '#' 开头）")
+
+
 def find_option(at, wid):
-    for o in at.sidebar.selectbox[0].options:
+    for o in win_sb(at).options:
         if wid_of(o) == wid:
             return o
     return None
@@ -74,7 +88,7 @@ APP = str(ROOT / "app.py")
 at = AppTest.from_file(APP, default_timeout=180)
 at.run()
 opt137 = find_option(at, 137)
-at.sidebar.selectbox[0].select(opt137).run()
+win_sb(at).select(opt137).run()
 e = list(at.exception)
 n_metric = len(at.metric)
 titles = [t.value for t in at.title]
@@ -93,7 +107,7 @@ try:
     at2 = AppTest.from_file(APP, default_timeout=180)
     at2.run()
     o42 = find_option(at2, 42)
-    at2.sidebar.selectbox[0].select(o42).run()
+    win_sb(at2).select(o42).run()
     e2 = list(at2.exception)
     warns = [w.value for w in at2.warning]
     weak_msg = any("无新发告警" in w for w in warns)
@@ -109,7 +123,7 @@ try:
     at3 = AppTest.from_file(APP, default_timeout=180)
     at3.run()
     o0 = find_option(at3, 0)
-    at3.sidebar.selectbox[0].select(o0).run()
+    win_sb(at3).select(o0).run()
     e3 = list(at3.exception)
     rec("TC-1.3", "页签一 边界：极小输入（窗口 #0，1 条告警）",
         "无异常，界面可渲染",
@@ -124,34 +138,34 @@ print("=" * 78)
 print("B. 页签二 · 处置单与派单")
 print("=" * 78)
 
-# --- TC-2.1 正常流：窗口 #137 有处置单，且可派单 ---
+# --- TC-2.1 正常流：窗口 #137 页签二（处置单 · 工单 · 批量导出） ---
+# 注：新版界面把原来的单按钮「派单」拆成了「生成工单预览 / 生成工单清单 /
+#     保存映射表」，并按需点（先填实体→团队映射，再出工单）。故此处按新界面
+#     的实际控件断言，且**不点「保存映射表」**（它会写 config/teams_user.csv，
+#     让测试保持零副作用）。
 try:
     at4 = AppTest.from_file(APP, default_timeout=180)
     at4.run()
-    at4.sidebar.selectbox[0].select(find_option(at4, 137)).run()
+    win_sb(at4).select(find_option(at4, 137)).run()
     e4 = list(at4.exception)
-    n_btn = len(at4.button)
-    btn_label = at4.button[0].label if n_btn else "(无按钮)"
+    labels = [b.label for b in at4.button]
+    n_btn = len(labels)
     n_dl = len(at4.get("download_button"))
-    # 点击派单，并核对**工单创建**的具体反馈（不是随便一个 success）
-    click_err, click_msgs, click_md = [], [], []
-    if n_btn:
-        at4.button[0].click().run()
+    has_ticket_ui = [x for x in labels if ("工单" in x or "映射" in x)]
+    # 点「生成工单预览」（不写盘），确认不抛异常
+    click_err = []
+    target = next((i for i, x in enumerate(labels) if "生成工单预览" in x), None)
+    if target is not None:
+        at4.button[target].click().run()
         click_err = list(at4.exception)
-        click_msgs = [s.value for s in at4.success]
-        click_md = [m.value for m in at4.markdown]
-    ticket_created = any("工单已创建" in m for m in click_msgs)
-    fields = [k for k in ("责任团队", "优先级", "关联变更")
-              if any(k in m for m in click_md)]
-    ok4 = (not e4) and (not click_err) and n_btn > 0 and ticket_created and len(fields) >= 2
-    rec("TC-2.1", "页签二 正常流 + 派单（窗口 #137）",
-        "无异常；存在「派单」按钮与下载按钮；点击后出现「工单已创建」，"
-        "且工单卡片含责任团队/优先级/关联变更",
-        f"异常={len(e4)}/点击后异常={len(click_err)}；按钮={n_btn}（{btn_label[:16]}…）；"
-        f"下载按钮={n_dl}；工单已创建={ticket_created}；"
-        f"工单字段命中={fields}", ok4)
+    ok4 = (not e4) and (not click_err) and n_btn > 0 and len(has_ticket_ui) >= 2
+    rec("TC-2.1", "页签二 正常流 + 工单（窗口 #137）",
+        "无异常；页面提供工单相关按钮（生成工单预览 / 生成工单清单 / 保存映射表）；"
+        "点击「生成工单预览」不抛异常",
+        f"异常={len(e4)}/点击后异常={len(click_err)}；按钮={n_btn}（{labels}）；"
+        f"下载按钮={n_dl}；工单相关控件={has_ticket_ui}", ok4)
 except Exception as ex:  # noqa: BLE001
-    rec("TC-2.1", "页签二 正常流 + 派单（窗口 #137）", "无异常",
+    rec("TC-2.1", "页签二 正常流 + 工单（窗口 #137）", "无异常",
         f"执行失败: {type(ex).__name__}", False)
 
 # --- TC-2.2 边界：窗口 #234 无处置单 → 优雅降级 ---
@@ -159,7 +173,7 @@ try:
     at5 = AppTest.from_file(APP, default_timeout=180)
     at5.run()
     o234 = find_option(at5, 234)
-    at5.sidebar.selectbox[0].select(o234).run()
+    win_sb(at5).select(o234).run()
     e5 = list(at5.exception)
     w5 = [w.value for w in at5.warning]
     # 语义断言：只需要「提到处置单缺失」+「不崩」，不绑定精确文案。

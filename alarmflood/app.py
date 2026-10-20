@@ -96,14 +96,70 @@ def load_llm():
     return None
 
 
+TEAMS_CSV = ROOT / "config" / "teams.csv"          # 基础表（随代码走，只读参考）
+TEAMS_USER = ROOT / "config" / "teams_user.csv"    # 值班人维护的覆盖项（前端可写）
+
+
 @st.cache_data(ttl=300)
-def load_teams():
-    """实体→责任团队映射（config/teams.csv）；文件缺失返回空表"""
-    p = ROOT / "config" / "teams.csv"
-    if not p.exists():
+def load_base_teams() -> dict:
+    """基础映射表 config/teams.csv（缺失返回空表）"""
+    if not TEAMS_CSV.exists():
         return {}
-    df = pd.read_csv(p)
-    return dict(zip(df["entity"].astype(str), df["team"].astype(str)))
+    df = pd.read_csv(TEAMS_CSV).dropna(subset=["entity"])
+    return {str(e).strip(): str(tm).strip()
+            for e, tm in zip(df["entity"], df["team"]) if str(e).strip()}
+
+
+@st.cache_data(ttl=300)
+def load_teams() -> dict:
+    """实际生效的映射 = 基础表 + 值班人覆盖（后者优先）。
+
+    分层是为了**不覆写原始配置**：teams.csv 可能正被编辑器占用、也可能是只读交付物，
+    值班人在界面上的改动只写进 teams_user.csv 的差异项，原始表保持干净可追溯。
+    """
+    m = dict(load_base_teams())
+    if TEAMS_USER.exists():
+        try:
+            du = pd.read_csv(TEAMS_USER).dropna(subset=["entity"])
+            for e, tm in zip(du["entity"], du["team"]):
+                if str(e).strip():
+                    m[str(e).strip()] = str(tm).strip()
+        except Exception:
+            pass        # 覆盖表坏了也不能让页面挂掉，退回基础表
+    return m
+
+
+def save_teams(mapping: dict) -> tuple[bool, str]:
+    """只把「与基础表不同的条目」写进 teams_user.csv；完全相同则删除该文件"""
+    try:
+        base = load_base_teams()
+        diff = {e: v for e, v in mapping.items() if v and base.get(e) != v}
+        TEAMS_USER.parent.mkdir(parents=True, exist_ok=True)
+        if diff:
+            pd.DataFrame(sorted(diff.items()), columns=["entity", "team"]) \
+                .to_csv(TEAMS_USER, index=False, encoding="utf-8")
+        elif TEAMS_USER.exists():
+            TEAMS_USER.unlink()
+        load_teams.clear()          # 清缓存，改完立即生效
+        return True, f"覆盖 {len(diff)} 项"
+    except Exception as e:          # 只读环境不能崩，改为提示导出
+        return False, f"{type(e).__name__}: {e}"
+
+
+def resolve_team(active: dict, teams: dict) -> tuple[str, str]:
+    """责任团队：① 处置单已写好的 assignee_team → ② 根因实体查映射表 → ③ 空
+
+    注意：M4 的 ticket 里没有 assignee_entity 字段（历史遗留），
+    早期版本直接用它反查导致明明有团队却显示"待指定"。
+    """
+    t = active.get("ticket", {})
+    ent = (t.get("assignee_entity") or "").strip()
+    if not ent:
+        rc = active.get("root_causes") or []
+        if rc:
+            ent = (rc[0].get("entity") or "").strip()
+    team = (t.get("assignee_team") or "").strip() or teams.get(ent, "").strip()
+    return ent, team
 
 
 def load_report(window_id: int):
@@ -292,35 +348,126 @@ def bordered_top1(title: str, entity: str, subline: str, color: str):
 
 
 def render_dispatch(active: dict, win_label: str):
-    """派单区：两步走（生成预览 → 值班人确认）。设计说明见 help.html 第 7 节"""
+    """派单区：两步走（生成预览 → 值班人确认）。
+
+    工单内容**全部可改**（责任团队/优先级/标题/补充说明），改完再确认发送；
+    未登记的实体可现场指定团队，可选回写到 config/teams.csv，下次自动命中。
+    设计说明见 help.html 第 7 节。
+    """
     st.markdown("**派单**")
 
     teams = load_teams()
-    t = active["ticket"]
-    entity = t.get("assignee_entity", "")
-    team = teams.get(entity, "待指定（未在 teams.csv 中登记）")
+    t = dict(active.get("ticket", {}))
+    entity, team_auto = resolve_team(active, teams)
+    ek = f"edit_{win_label}"
 
     if st.button("📝 生成工单预览", key=f"gen_{win_label}"):
         st.session_state[f"ticket_{win_label}"] = True
     if not st.session_state.get(f"ticket_{win_label}"):
         return
 
+    known = sorted(set(teams.values()))
+    opts = known + ["（自定义…）"]
+    cur = st.session_state.get(f"{ek}_team", team_auto or "（自定义…）")
+    idx = opts.index(cur) if cur in opts else len(opts) - 1
+
     with st.container(border=True):
-        st.markdown(f"**工单标题**：{t['title']}")
+        title = st.text_input("工单标题", value=t.get("title", ""), key=f"{ek}_title")
         c1, c2 = st.columns(2)
-        c1.markdown(f"**责任团队**：{team}")
-        c2.markdown(f"**优先级**：{t['priority']}")
+        with c1:
+            sel = st.selectbox("责任团队", opts, index=idx, key=f"{ek}_team_sel",
+                               help=f"由根因实体 {entity or '—'} 查映射表自动带出，可任意改")
+            custom = ""
+            if sel == "（自定义…）":
+                custom = st.text_input("自定义团队名", key=f"{ek}_team_custom",
+                                       placeholder="如：缓存组 / 张工（值班）")
+            team = custom.strip() if custom.strip() else ("" if sel == "（自定义…）" else sel)
+            st.session_state[f"{ek}_team"] = sel
+            if entity and team:
+                st.caption(f"根因实体 `{entity}`"
+                           + ("（映射表命中）" if teams.get(entity) == team
+                              else "（已人工改写）"))
+            elif entity and not team:
+                st.caption(f"根因实体 `{entity}` 未登记责任团队，请指定")
+            if entity and team and teams.get(entity) != team:
+                if st.button("💾 把这个团队存进映射表", key=f"{ek}_save"):
+                    m = dict(teams)
+                    m[entity] = team
+                    ok, why = save_teams(m)
+                    if ok:
+                        st.success(f"已记住：`{entity}` → {team}（写入 config/teams_user.csv，"
+                                   "原始 teams.csv 不动），以后同类故障自动带出")
+                    else:
+                        st.warning(f"保存失败（{why}）——可用左侧「🗂 责任团队映射表」导出后手动维护")
+        with c2:
+            prio_opts = ["P1", "P2", "P3", "P4"]
+            prio = st.selectbox("优先级", prio_opts,
+                                index=prio_opts.index(t.get("priority", "P2"))
+                                if t.get("priority") in prio_opts else 1,
+                                key=f"{ek}_prio")
+        note = st.text_area("补充说明（可选）", key=f"{ek}_note",
+                            placeholder="如：已确认与昨晚发布无关，请优先排查内存泄漏")
         if t.get("related_changes"):
-            st.markdown(f"**关联变更**：{t['related_changes']}")
+            st.caption(f"关联变更：{t['related_changes']}")
+
+    payload = {**t, "title": title, "assignee_team": team or "待指定",
+               "assignee_entity": entity, "priority": prio}
+    if note.strip():
+        payload["operator_note"] = note.strip()
+    if team and teams.get(entity) != team:
+        payload["team_edited_by"] = "值班人"     # 留下人工改动的痕迹，便于追溯
 
     st.download_button("⬇️ 下载工单（JSON）",
-                       data=json.dumps({**t, "assignee_team": team},
-                                       ensure_ascii=False, indent=2),
+                       data=json.dumps(payload, ensure_ascii=False, indent=2),
                        file_name=f"ticket_{win_label.replace(':', '-')}.json",
                        mime="application/json",
                        key=f"dl_{win_label}")
     if st.button("✅ 值班人确认，发送工单", type="primary", key=f"send_{win_label}"):
-        st.success(f"已发送给 **{team}**，状态：待值班工程师接单处理")
+        if not team:
+            st.error("请指定责任团队后再发送")
+        else:
+            st.success(f"已发送给 **{team}**（{prio}），状态：待值班工程师接单处理")
+
+
+def render_teams_admin():
+    """侧边栏：责任团队映射表维护（可视化增删改）
+
+    改动**不覆盖原始 teams.csv**，只把差异项写入 config/teams_user.csv 并在加载时覆盖，
+    这样原始配置始终干净可追溯，也避免文件被编辑器占用时保存失败。
+    """
+    with st.sidebar.expander("🗂 责任团队映射表", expanded=False):
+        teams = load_teams()
+        df = pd.DataFrame(sorted(teams.items()), columns=["实体 entity", "责任团队 team"])
+        n_user = len(pd.read_csv(TEAMS_USER)) if TEAMS_USER.exists() else 0
+        st.caption(f"共 {len(df)} 条 · 决定派单时自动带出的责任团队"
+                   + (f" · 其中 {n_user} 条为值班人自定义" if n_user else ""))
+        try:
+            edited = st.data_editor(df, num_rows="dynamic", width="stretch",
+                                    hide_index=True, height=240,
+                                    key="teams_editor")
+        except TypeError:
+            edited = st.data_editor(df, num_rows="dynamic", hide_index=True,
+                                    height=240, use_container_width=True,
+                                    key="teams_editor")
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("💾 保存映射表", key="teams_save"):
+                m = {}
+                for r in edited.itertuples():
+                    e = str(getattr(r, "_1", "") or "").strip()
+                    v = str(getattr(r, "_2", "") or "").strip()
+                    if e:
+                        m[e] = v
+                ok, why = save_teams(m)
+                if ok:
+                    st.success(f"已保存（{why}）→ config/teams_user.csv，派单立即可用")
+                else:
+                    st.warning(f"保存失败（{why}）——可下载后用编辑器维护")
+        with c2:
+            st.download_button("⬇️ 导出 CSV",
+                               data=edited.to_csv(index=False).encode("utf-8-sig"),
+                               file_name="teams.csv", mime="text/csv",
+                               key="teams_dl")
 
 
 # ---------- 窗口分析渲染（内置/导入两种模式共用） ----------
@@ -945,6 +1092,7 @@ else:
     st.stop()
 
 render_llm_config()
+render_teams_admin()
 
 show_truth = (st.sidebar.toggle("显示数据集标注（仅供核对）", value=False)
               if mode == "builtin" else False)
